@@ -8,7 +8,7 @@
 
 #include "buf.h"
 #include "proc.h"
-#include "platform.h"
+#include "tux_pal.h"
 
 struct ELFLoadInfo {
     asptr_t stack;

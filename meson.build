@@ -23,3 +23,5 @@ if has_auto_var_init
 endif
 
 subdir('src')
+subdir('pal')
+subdir('tools')

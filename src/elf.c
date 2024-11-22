@@ -5,8 +5,8 @@
 #include "elf.h"
 
 enum {
-    MAPANON = PLAT_MAP_PRIVATE | PLAT_MAP_FIXED | PLAT_MAP_ANONYMOUS,
-    MAPFILE = PLAT_MAP_PRIVATE | PLAT_MAP_FIXED,
+    MAPANON = PAL_MAP_PRIVATE | PAL_MAP_FIXED | PAL_MAP_ANONYMOUS,
+    MAPFILE = PAL_MAP_PRIVATE | PAL_MAP_FIXED,
 };
 
 enum {
@@ -26,15 +26,15 @@ elfcheck(struct FileHeader* ehdr)
 static int
 pflags(int prot)
 {
-    return ((prot & PF_R) ? PLAT_PROT_READ : 0) |
-        ((prot & PF_W) ? PLAT_PROT_WRITE : 0) |
-        ((prot & PF_X) ? PLAT_PROT_EXEC : 0);
+    return ((prot & PF_R) ? PAL_PROT_READ : 0) |
+        ((prot & PF_W) ? PAL_PROT_WRITE : 0) |
+        ((prot & PF_X) ? PAL_PROT_EXEC : 0);
 }
 
 static void
 sanitize(void* p, size_t sz, int prot)
 {
-    if ((prot & PLAT_PROT_EXEC) == 0)
+    if ((prot & PAL_PROT_EXEC) == 0)
         return;
 #if (defined(__x86_64__) || defined(_M_X64)) && TUX_SANITIZE_CODE
     const uint8_t SAFE_BYTE = 0xcc;
@@ -46,7 +46,7 @@ static bool
 bufreadelfseg(struct TuxProc* proc, asptr_t start, asptr_t offset, asptr_t end,
         size_t p_offset, size_t filesz, int prot, buf_t buf, size_t pagesize)
 {
-    asptr_t p = proc->tux->pf.as_mmap(proc->p_as, start, end - start, PLAT_PROT_READ | PLAT_PROT_WRITE, MAPANON, -1, 0);
+    asptr_t p = pal_as_mmap(proc->p_as, start, end - start, PAL_PROT_READ | PAL_PROT_WRITE, MAPANON, -1, 0);
     if (p == (asptr_t) -1) {
         return false;
     }
@@ -55,12 +55,12 @@ bufreadelfseg(struct TuxProc* proc, asptr_t start, asptr_t offset, asptr_t end,
 
     sanitize((void*) p, pagesize, prot);
     sanitize((void*) (end - pagesize), pagesize, prot);
-    // Converting start to actual pointer requires no PLAT_EXTERNAL_ADDR_SPACE.
+    // Converting start to actual pointer requires no PAL_EXTERNAL_ADDR_SPACE.
     ssize_t n = bufread(buf, (void*) (start + offset), filesz, p_offset);
     if (n != (ssize_t) filesz) {
         return false;
     }
-    if (proc->tux->pf.as_mprotect(proc->p_as, start, end - start, prot) < 0)
+    if (pal_as_mprotect(proc->p_as, start, end - start, prot) < 0)
         return false;
     return true;
 }
@@ -179,7 +179,7 @@ elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, 
     };
 
     size_t stacksize = p->tux->opts.stacksize;
-    asptr_t stack = p->tux->pf.as_mmap(p->p_as, p->p_info.maxaddr - stacksize, stacksize, PLAT_PROT_READ | PLAT_PROT_WRITE, MAPANON, -1, 0);
+    asptr_t stack = pal_as_mmap(p->p_as, p->p_info.maxaddr - stacksize, stacksize, PAL_PROT_READ | PAL_PROT_WRITE, MAPANON, -1, 0);
     if (stack == (asptr_t) -1)
         goto err;
     p->stack = stack;

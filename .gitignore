@@ -1,2 +1,4 @@
 a.out
 .cache
+/subprojects/libmmap
+/subprojects/libboxmap

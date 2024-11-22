@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include "tux.h"
-#include "platform.h"
+#include "tux_pal.h"
 
 enum {
     PATH_MAX   = 4096,

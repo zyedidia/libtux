@@ -5,10 +5,10 @@ srcs = files(
   'elf.c',
 )
 
-libtux = library(
+libtux = static_library(
   'tux',
   srcs,
-  c_args: c_args_hardened + ['-fvisibility=hidden'],
+  c_args: c_args_hardened,
   include_directories: include_directories('include'),
   install: true,
 )

@@ -27,14 +27,14 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
     if (!p)
         return NULL;
     p->tux = tux;
-    struct PlatAddrSpace* as = tux->pf.as_new(tux->plat);
+    struct PlatAddrSpace* as = pal_as_new(tux->plat);
     if (!as)
         goto err1;
-    struct PlatContext* ctx = tux->pf.ctx_new(tux->plat, p);
+    struct PlatContext* ctx = pal_ctx_new(tux->plat, p);
     if (!ctx)
         goto err2;
     p->p_as = as;
-    p->p_info = tux->pf.as_info(as);
+    p->p_info = pal_as_info(as);
 
     if (!procfile(p, prog, size, argc, argv))
         goto err3;
@@ -43,9 +43,9 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
 
     return p;
 err3:
-    tux->pf.ctx_free(ctx);
+    pal_ctx_free(ctx);
 err2:
-    tux->pf.as_free(as);
+    pal_as_free(as);
 err1:
     procfree(p);
     return NULL;
@@ -83,7 +83,7 @@ enum {
 static bool
 stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, asptr_t* newsp)
 {
-#ifdef PLAT_EXTERNAL_ADDRSPACE
+#ifdef PAL_EXTERNAL_ADDRSPACE
 #error "TODO: platforms that require external address spaces are currently unsupported"
 #endif
 
@@ -107,14 +107,14 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
 
     // Write argc and argv pointers to the stack.
     long* p_argc = (long*) (stack_top - 2 * ARG_BLOCK);
-    *newsp = p->tux->pf.as_p2user(p->p_as, p_argc);
+    *newsp = pal_as_p2user(p->p_as, p_argc);
     *p_argc++ = argc;
     char** p_argvp = (char**) p_argc;
     for (int i = 0; i < argc; i++) {
         if ((uintptr_t) p_argvp >= (uintptr_t) stack_top - ARG_BLOCK) {
             return false;
         }
-        p_argvp[i] = (char*) p->tux->pf.as_p2user(p->p_as, argv_ptrs[i]);
+        p_argvp[i] = (char*) pal_as_p2user(p->p_as, argv_ptrs[i]);
     }
     p_argvp[argc] = NULL;
     // Empty envp.
@@ -128,7 +128,7 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
     *av++ = (struct Auxv) { AT_PHNUM, info->elfphnum };
     *av++ = (struct Auxv) { AT_PHENT, info->elfphentsize };
     *av++ = (struct Auxv) { AT_ENTRY, info->elfentry };
-    *av++ = (struct Auxv) { AT_EXECFN, p->tux->pf.as_p2user(p->p_as, p_argvp[0]) };
+    *av++ = (struct Auxv) { AT_EXECFN, pal_as_p2user(p->p_as, p_argvp[0]) };
     *av++ = (struct Auxv) { AT_PAGESZ, getpagesize() };
     *av++ = (struct Auxv) { AT_HWCAP, 0 };
     *av++ = (struct Auxv) { AT_HWCAP2, 0 };
@@ -159,14 +159,14 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
     if (interp != NULL)
         entry = info.ldentry;
 
-    p->tux->pf.ctx_init(p->p_ctx, entry, sp);
+    pal_ctx_init(p->p_ctx, entry, sp);
 
     p->brkbase = info.lastva;
     p->brksize = 0;
 
     // Reserve the brk region.
-    const int mapflags = PLAT_MAP_PRIVATE | PLAT_MAP_ANONYMOUS | PLAT_MAP_FIXED;
-    asptr_t brkregion = p->tux->pf.as_mmap(p->p_as, p->brkbase, BRKMAXSIZE, PLAT_PROT_NONE, mapflags, -1, 0);
+    const int mapflags = PAL_MAP_PRIVATE | PAL_MAP_ANONYMOUS | PAL_MAP_FIXED;
+    asptr_t brkregion = pal_as_mmap(p->p_as, p->brkbase, BRKMAXSIZE, PAL_PROT_NONE, mapflags, -1, 0);
     if (brkregion == (asptr_t) -1)
         return false;
 
