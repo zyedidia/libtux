@@ -1,5 +1,8 @@
 srcs = files(
   'tux.c',
+  'buf.c',
+  'proc.c',
+  'elf.c',
 )
 
 libtux = library(

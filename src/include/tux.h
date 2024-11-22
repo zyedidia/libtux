@@ -2,9 +2,15 @@
 
 #include "platform.h"
 
+struct TuxOptions {
+    size_t pagesize;
+    size_t stacksize;
+};
+
 struct Tux {
     struct Platform* plat;
     struct TuxPlatformFuncs pf;
+    struct TuxOptions opts;
 };
 
 struct TuxProc;
