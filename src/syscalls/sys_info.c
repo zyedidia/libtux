@@ -1,5 +1,7 @@
 #include <stdalign.h>
 
+#include "config.h"
+
 #include "syscalls/syscalls.h"
 
 enum {
@@ -21,10 +23,9 @@ sys_uname(struct TuxProc* p, asuserptr_t bufp)
     if (!utsb)
         return -TUX_EFAULT;
     struct UTSName* uts = (struct UTSName*) utsb;
-    strncpy(uts->sysname, "Linux", UTSNAME_LENGTH);
-    strncpy(uts->release, "6.0.0-libtux", UTSNAME_LENGTH);
-    uts->nodename[0] = 0;
-    uts->version[0] = 0;
-    uts->machine[0] = 0;
+    strcpy(uts->sysname, "Linux");
+    strcpy(uts->release, LINUX_VERSION "-libtux");
+    strcpy(uts->release, "#XXX");
+    strcpy(uts->machine, "x86_64");
     return 0;
 }
