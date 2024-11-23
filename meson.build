@@ -19,6 +19,7 @@ c_args_hardened = [
 
 c_args_warnings = [
   '-Wno-unused-parameter',
+  '-Wno-language-extension-token',
 ]
 
 has_auto_var_init = meson.get_compiler('c').has_argument('-ftrivial-auto-var-init=zero')
