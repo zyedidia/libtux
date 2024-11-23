@@ -5,8 +5,8 @@
 #include "elf.h"
 
 enum {
-    MAPANON = PAL_MAP_PRIVATE | PAL_MAP_FIXED | PAL_MAP_ANONYMOUS,
-    MAPFILE = PAL_MAP_PRIVATE | PAL_MAP_FIXED,
+    MAPANON = PAL_MAP_PRIVATE | PAL_MAP_ANONYMOUS,
+    MAPFILE = PAL_MAP_PRIVATE,
 };
 
 enum {
@@ -46,7 +46,7 @@ static bool
 bufreadelfseg(struct TuxProc* proc, asptr_t start, asptr_t offset, asptr_t end,
         size_t p_offset, size_t filesz, int prot, buf_t buf, size_t pagesize)
 {
-    asptr_t p = pal_as_mmap(proc->p_as, start, end - start, PAL_PROT_READ | PAL_PROT_WRITE, MAPANON, -1, 0);
+    asptr_t p = pal_as_mapat(proc->p_as, start, end - start, PAL_PROT_READ | PAL_PROT_WRITE, MAPANON, -1, 0);
     if (p == (asptr_t) -1) {
         return false;
     }
@@ -140,7 +140,7 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
             goto err1;
         }
 
-        /* printf("load %lx %lx (P: %d)\n", base + start, base + end, pflags(p->flags)); */
+        printf("load %lx %lx (P: %d)\n", base + start, base + end, pflags(p->flags));
 
         if (!bufreadelfseg(proc, base + start, offset, base + end, p->offset, p->filesz, pflags(p->flags), buf, pagesize))
             goto err1;
@@ -179,7 +179,7 @@ elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, 
     };
 
     size_t stacksize = p->tux->opts.stacksize;
-    asptr_t stack = pal_as_mmap(p->p_as, p->p_info.maxaddr - stacksize, stacksize, PAL_PROT_READ | PAL_PROT_WRITE, MAPANON, -1, 0);
+    asptr_t stack = pal_as_mapat(p->p_as, p->p_info.maxaddr - stacksize, stacksize, PAL_PROT_READ | PAL_PROT_WRITE, MAPANON, -1, 0);
     if (stack == (asptr_t) -1)
         goto err;
     p->stack = stack;

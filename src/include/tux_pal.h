@@ -3,10 +3,12 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "tux_arch.h"
+
 enum {
     PAL_MAP_PRIVATE   = (1 << 0),
     PAL_MAP_ANONYMOUS = (1 << 1),
-    PAL_MAP_FIXED     = (1 << 2),
+    PAL_MAP_SHARED = (1 << 2),
 
     PAL_PROT_NONE     = 0,
     PAL_PROT_READ     = (1 << 0),
@@ -31,14 +33,14 @@ struct TuxAddrSpaceInfo {
     asptr_t maxaddr;
 };
 
-typedef uintptr_t (*SysHandlerFn)(struct PlatContext*, uintptr_t, uintptr_t, uintptr_t,
-        uintptr_t, uintptr_t, uintptr_t, uintptr_t);
+typedef void (*SysHandlerFn)(struct PlatContext* ctx);
 
 struct PlatAddrSpace*   pal_as_new(struct Platform* plat);
 struct TuxAddrSpaceInfo pal_as_info(struct PlatAddrSpace* as);
 struct PlatContext*     pal_ctx_new(struct Platform* plat, void* ctxp);
 
-asptr_t                 pal_as_mmap(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, int fd, off_t off);
+asptr_t                 pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, int fd, off_t off);
+asptr_t                 pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, int fd, off_t off);
 int                     pal_as_munmap(struct PlatAddrSpace* as, asptr_t addr, size_t size);
 int                     pal_as_mprotect(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot);
 void                    pal_as_copyfrom(struct PlatAddrSpace* as, void* dst, asuserptr_t src, size_t size);
@@ -48,9 +50,9 @@ void                    pal_as_free(struct PlatAddrSpace* as);
 asuserptr_t             pal_as_p2user(struct PlatAddrSpace* as, void* p);
 void*                   pal_as_user2p(struct PlatAddrSpace* as, asuserptr_t asp);
 
-void                    pal_ctx_init(struct PlatContext* ctx, asptr_t entry, asptr_t sp);
 void                    pal_ctx_resume(struct PlatContext* ctx, struct PlatAddrSpace* as);
 void*                   pal_ctx_data(struct PlatContext* ctx);
 void                    pal_ctx_free(struct PlatContext* ctx);
+struct TuxRegs*         pal_ctx_regs(struct PlatContext* ctx);
 
-void                    pal_sys_sethandler(SysHandlerFn fn);
+void                    pal_sys_handler(struct Platform* plat, SysHandlerFn fn);

@@ -3,7 +3,10 @@ srcs = files(
   'buf.c',
   'proc.c',
   'elf.c',
+  'sys.c',
 )
+
+subdir('arch/' + cpuarch)
 
 libtux = static_library(
   'tux',

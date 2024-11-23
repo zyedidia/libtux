@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tux_pal.h"
+#include "tux_arch.h"
 #include "mmap.h"
 #include "boxmap.h"
 
@@ -11,6 +13,7 @@ struct PlatOptions {
 struct Platform {
     struct BoxMap* bm;
     struct PlatOptions opts;
+    SysHandlerFn syshandler;
 };
 
 struct PlatAddrSpace {
@@ -23,5 +26,20 @@ struct PlatAddrSpace {
 };
 
 struct PlatContext {
+    void* kstackp;
+    void* tp;
+    struct TuxRegs regs;
     void* ctxp;
+    struct Platform* plat;
 };
+
+static inline size_t
+gb(size_t x)
+{
+    return x * 1024 * 1024 * 1024;
+}
+
+extern struct PlatContext* pal_myctx;
+
+void sud_block(void);
+void sud_allow(void);

@@ -1,6 +1,15 @@
 srcs = files(
-  'sud.c',
+  'platform.c',
+  'ctx.c',
+  'vm.c',
+  'sys.c',
 )
+
+if cpuarch == 'x64'
+  srcs += files(
+    'runtime_x64.S',
+  )
+endif
 
 mmap = subproject('libmmap').get_variable('mmap')
 boxmap = subproject('libboxmap').get_variable('boxmap')

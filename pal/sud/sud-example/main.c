@@ -82,9 +82,9 @@ int main() {
 
     prctl(PR_SET_SYSCALL_USER_DISPATCH, PR_SYS_DISPATCH_ON, rt_restore, rt_restore_size, &filter);
 
-    user_syscall(SYS_write, 1, (uint64_t) "hello\n", 6, 0, 0);
-    user_syscall(SYS_write, 1, (uint64_t) "hello\n", 6, 0, 0);
-    user_syscall(SYS_write, 1, (uint64_t) "hello\n", 6, 0, 0);
+    user_syscall(SYS_write, 1, (uint64_t) "hello1\n", 7, 0, 0);
+    user_syscall(SYS_write, 1, (uint64_t) "hello2\n", 7, 0, 0);
+    user_syscall(SYS_write, 1, (uint64_t) "hello3\n", 7, 0, 0);
 
     filter = SYSCALL_DISPATCH_FILTER_ALLOW;
 

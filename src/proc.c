@@ -2,8 +2,9 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#include "arch/regs.h"
+
 #include "buf.h"
-#include "kernel.h"
 #include "proc.h"
 #include "elf.h"
 
@@ -35,6 +36,7 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
         goto err2;
     p->p_as = as;
     p->p_info = pal_as_info(as);
+    p->p_ctx = ctx;
 
     if (!procfile(p, prog, size, argc, argv))
         goto err3;
@@ -107,7 +109,7 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
 
     // Write argc and argv pointers to the stack.
     long* p_argc = (long*) (stack_top - 2 * ARG_BLOCK);
-    *newsp = pal_as_p2user(p->p_as, p_argc);
+    *newsp = (asptr_t) p_argc;
     *p_argc++ = argc;
     char** p_argvp = (char**) p_argc;
     for (int i = 0; i < argc; i++) {
@@ -159,14 +161,16 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
     if (interp != NULL)
         entry = info.ldentry;
 
-    pal_ctx_init(p->p_ctx, entry, sp);
+    struct TuxRegs regs;
+    regs_init(&regs, entry, sp);
+    *pal_ctx_regs(p->p_ctx) = regs;
 
     p->brkbase = info.lastva;
     p->brksize = 0;
 
     // Reserve the brk region.
-    const int mapflags = PAL_MAP_PRIVATE | PAL_MAP_ANONYMOUS | PAL_MAP_FIXED;
-    asptr_t brkregion = pal_as_mmap(p->p_as, p->brkbase, BRKMAXSIZE, PAL_PROT_NONE, mapflags, -1, 0);
+    const int mapflags = PAL_MAP_PRIVATE | PAL_MAP_ANONYMOUS;
+    asptr_t brkregion = pal_as_mapat(p->p_as, p->brkbase, BRKMAXSIZE, PAL_PROT_NONE, mapflags, -1, 0);
     if (brkregion == (asptr_t) -1)
         return false;
 

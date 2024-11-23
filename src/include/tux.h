@@ -17,8 +17,8 @@ struct Tux {
 
 struct TuxProc;
 
-struct Tux* tux_new(struct Platform* plat);
+struct Tux* tux_new(struct Platform* plat, struct TuxOptions opts);
 
-struct TuxProc* tux_proc_new(struct Tux* tux, uint8_t* prog, size_t progsize, int argc, char** argv);
+struct TuxProc* tux_proc_newfile(struct Tux* tux, uint8_t* prog, size_t progsize, int argc, char** argv);
 
-void tux_run(struct Tux* tux);
+void tux_proc_start(struct Tux* tux, struct TuxProc* p);
