@@ -27,7 +27,7 @@ struct PlatAddrSpace {
 
 struct PlatContext {
     void* kstackp;
-    void* tp;
+    uintptr_t ktp;
     struct TuxRegs regs;
     void* ctxp;
     struct Platform* plat;

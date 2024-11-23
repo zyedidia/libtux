@@ -136,3 +136,15 @@ pal_as_user2p(struct PlatAddrSpace* as, asuserptr_t userp)
         return (void*) userp;
     return NULL;
 }
+
+asuserptr_t
+pal_as_ap2user(struct PlatAddrSpace* as, asptr_t asp)
+{
+    return (asuserptr_t) asp;
+}
+
+asptr_t
+pal_as_user2ap(struct PlatAddrSpace* as, asuserptr_t asup)
+{
+    return (asptr_t) asup;
+}

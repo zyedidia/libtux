@@ -15,6 +15,39 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     case TUX_SYS_exit:
         r = sys_exit(proc, a0);
         break;
+    case TUX_SYS_brk:
+        r = sys_brk(proc, a0);
+        break;
+    case TUX_SYS_openat:
+        r = sys_openat(proc, a0, a1, a2, a3);
+        break;
+    case TUX_SYS_writev:
+        r = sys_writev(proc, a0, a1, a2);
+        break;
+    case TUX_SYS_getrandom:
+        r = sys_getrandom(proc, a0, a1, a2);
+        break;
+    case TUX_SYS_clock_gettime:
+        r = sys_clock_gettime(proc, a0, a1);
+        break;
+    case TUX_SYS_set_tid_address:
+        r = 0;
+        break;
+    case TUX_SYS_set_robust_list:
+        r = 0;
+        break;
+    case TUX_SYS_rseq:
+        r = -TUX_ENOSYS;
+        break;
+    case TUX_SYS_uname:
+        r = sys_uname(proc, a0);
+        break;
+    case TUX_SYS_prlimit64:
+        r = -TUX_ENOSYS;
+        break;
+    case TUX_SYS_readlink:
+        r = -TUX_ENOSYS;
+        break;
     default:
         fprintf(stderr, "unknown syscall: %ld\n", sysno);
         assert(!"unhandled syscall");

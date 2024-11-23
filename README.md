@@ -3,7 +3,7 @@
 libtux is an embeddable implementation of the Linux API. With libtux, you can
 run Linux binaries inside of your application. The library is written such that
 the underlying platform abstraction is provided by a PAL (platform abstraction
-library), and all other functionality within libtux is implemented using only
+layer), and all other functionality within libtux is implemented using only
 portable, standard C code. The PAL provides mechanisms for creating address
 spaces and execution contexts, and allows libtux to run in a variety of
 environments with different isolation mechanisms.

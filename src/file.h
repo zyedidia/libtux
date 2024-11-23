@@ -13,6 +13,8 @@ enum {
     TUX_O_CREAT  = 64,
     TUX_O_TRUNC  = 512,
     TUX_O_APPEND = 1024,
+
+    TUX_AT_FDCWD = -100,
 };
 
 struct FDFile* filefnew(FILE* file);

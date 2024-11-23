@@ -48,12 +48,15 @@ void                    pal_as_copyto(struct PlatAddrSpace* as, asuserptr_t dst,
 void                    pal_as_free(struct PlatAddrSpace* as);
 // Only used if PAL_EXTERNAL_ADDRSPACE is not defined
 asuserptr_t             pal_as_p2user(struct PlatAddrSpace* as, void* p);
-void*                   pal_as_user2p(struct PlatAddrSpace* as, asuserptr_t asp);
+void*                   pal_as_user2p(struct PlatAddrSpace* as, asuserptr_t asup);
+asuserptr_t             pal_as_ap2user(struct PlatAddrSpace* as, asptr_t asp);
+asptr_t                 pal_as_user2ap(struct PlatAddrSpace* as, asuserptr_t asup);
 
 uint64_t                pal_ctx_run(struct PlatContext* ctx, struct PlatAddrSpace* as);
 void*                   pal_ctx_data(struct PlatContext* ctx);
 void                    pal_ctx_free(struct PlatContext* ctx);
 struct TuxRegs*         pal_ctx_regs(struct PlatContext* ctx);
 void                    pal_ctx_exit(struct PlatContext* ctx, uint64_t val);
+void                    pal_ctx_tpset(struct PlatContext* ctx, asptr_t tp);
 
 void                    pal_sys_handler(struct Platform* plat, SysHandlerFn fn);
