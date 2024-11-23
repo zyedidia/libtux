@@ -5,6 +5,8 @@
 #include "proc.h"
 #include "sys.h"
 
+#include "arch_sys.h"
+
 struct Tux*
 tux_new(struct Platform* plat, struct TuxOptions opts)
 {
@@ -15,12 +17,12 @@ tux_new(struct Platform* plat, struct TuxOptions opts)
         .plat = plat,
         .opts = opts,
     };
-    pal_sys_handler(plat, &syshandler);
+    pal_sys_handler(plat, &arch_syshandle);
     return tux;
 }
 
-void
+uint64_t
 tux_proc_start(struct Tux* tux, struct TuxProc* p)
 {
-    pal_ctx_resume(p->p_ctx, p->p_as);
+    return pal_ctx_run(p->p_ctx, p->p_as);
 }

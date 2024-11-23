@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <errno.h>
 
-#include "arch/regs.h"
+#include "arch_regs.h"
 
 #include "buf.h"
 #include "proc.h"

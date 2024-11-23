@@ -91,7 +91,8 @@ main(int argc, char** argv)
         return 1;
     }
 
-    tux_proc_start(tux, p);
+    uint64_t code = tux_proc_start(tux, p);
+    printf("exited with code: %ld\n", code);
 
     return 0;
 }

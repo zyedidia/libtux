@@ -6,13 +6,14 @@ srcs = files(
   'sys.c',
 )
 
+subdir('syscalls')
 subdir('arch/' + cpuarch)
 
 libtux = static_library(
   'tux',
   srcs,
   c_args: c_args_hardened,
-  include_directories: include_directories('include'),
+  include_directories: include_directories('include', 'arch/' + cpuarch),
   install: true,
 )
 

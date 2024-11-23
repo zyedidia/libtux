@@ -6,8 +6,11 @@
 // TODO: make this thread-local with TID.
 struct PlatContext* pal_myctx;
 
-extern void pal_ctx_entry(struct PlatContext* ctx, void** kstackp)
+extern uint64_t pal_ctx_entry(struct PlatContext* ctx, void** kstackp)
     asm ("pal_ctx_entry");
+
+extern void pal_asm_ctx_exit(void* kstackp, uint64_t val)
+    asm ("pal_asm_ctx_exit");
 
 struct PlatContext*
 pal_ctx_new(struct Platform* plat, void* ctxp)
@@ -22,17 +25,17 @@ pal_ctx_new(struct Platform* plat, void* ctxp)
     return ctx;
 }
 
-void
-pal_ctx_resume(struct PlatContext* ctx, struct PlatAddrSpace* as)
+uint64_t
+pal_ctx_run(struct PlatContext* ctx, struct PlatAddrSpace* as)
 {
     (void) as;
     pal_myctx = ctx;
 
     sud_block();
-    pal_ctx_entry(ctx, &ctx->kstackp);
+    uint64_t ret = pal_ctx_entry(ctx, &ctx->kstackp);
     sud_allow();
 
-    pal_myctx = NULL;
+    return ret;
 }
 
 void
@@ -45,4 +48,17 @@ struct TuxRegs*
 pal_ctx_regs(struct PlatContext* ctx)
 {
     return &ctx->regs;
+}
+
+void*
+pal_ctx_data(struct PlatContext* ctx)
+{
+    return ctx->ctxp;
+}
+
+void
+pal_ctx_exit(struct PlatContext* ctx, uint64_t val)
+{
+    pal_myctx = NULL;
+    pal_asm_ctx_exit(ctx->kstackp, val);
 }

@@ -50,9 +50,10 @@ void                    pal_as_free(struct PlatAddrSpace* as);
 asuserptr_t             pal_as_p2user(struct PlatAddrSpace* as, void* p);
 void*                   pal_as_user2p(struct PlatAddrSpace* as, asuserptr_t asp);
 
-void                    pal_ctx_resume(struct PlatContext* ctx, struct PlatAddrSpace* as);
+uint64_t                pal_ctx_run(struct PlatContext* ctx, struct PlatAddrSpace* as);
 void*                   pal_ctx_data(struct PlatContext* ctx);
 void                    pal_ctx_free(struct PlatContext* ctx);
 struct TuxRegs*         pal_ctx_regs(struct PlatContext* ctx);
+void                    pal_ctx_exit(struct PlatContext* ctx, uint64_t val);
 
 void                    pal_sys_handler(struct Platform* plat, SysHandlerFn fn);

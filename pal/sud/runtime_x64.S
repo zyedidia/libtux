@@ -1,6 +1,7 @@
 #define N_RTCALLS 256
 #define PROC_REGS 16
 
+// pal_ctx_entry(PlatContext* ctx, void** kstackp)
 .p2align 4
 .global pal_ctx_entry
 pal_ctx_entry:
@@ -17,7 +18,7 @@ pal_ctx_entry:
 	int3
 
 .p2align 4
-.globl lfi_restore_regs
+.global pal_restore_regs
 pal_restore_regs:
 	mov PROC_REGS+8*18(%rdi), %r11
 	wrgsbase %r11
@@ -39,6 +40,21 @@ pal_restore_regs:
 	mov PROC_REGS+8*7(%rdi), %rdi
 	ret
 
+// pal_asm_ctx_exit(void* kstackp, int code)
+.p2align 4
+.global pal_asm_ctx_exit
+pal_asm_ctx_exit:
+	movq %rdi, %rsp
+	movq %rsi, %rax
+	popq %rbp
+	popq %rbx
+	popq %r12
+	popq %r13
+	popq %r14
+	popq %r15
+	ret
+
+.p2align 4
 .global sud_rt_restore
 sud_rt_restore:
 	mov $15, %rax
