@@ -2,3 +2,5 @@ a.out
 .cache
 /subprojects/libmmap
 /subprojects/libboxmap
+/subprojects/cwalk
+/subprojects/libargp

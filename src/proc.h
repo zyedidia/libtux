@@ -8,9 +8,9 @@
 #include "tux_pal.h"
 
 enum {
-    PATH_MAX   = 4096,
-    NOFILE     = 128,
-    BRKMAXSIZE = 512ULL * 1024 * 1024,
+    TUX_PATH_MAX   = 4096,
+    TUX_NOFILE     = 128,
+    TUX_BRKMAXSIZE = 512ULL * 1024 * 1024,
 };
 
 struct TuxProc;
@@ -31,11 +31,11 @@ struct FDFile {
 };
 
 struct FDTable {
-    struct FDFile* files[NOFILE];
+    struct FDFile* files[TUX_NOFILE];
 };
 
 struct Dir {
-    char name[PATH_MAX];
+    char name[TUX_PATH_MAX];
     int fd;
 };
 

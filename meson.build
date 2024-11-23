@@ -36,6 +36,8 @@ endif
 
 cpuarch = archmap[cpu]
 
+argp = subproject('libargp').get_variable('argp_dep')
+
 subdir('src')
 subdir('pal')
 subdir('tools')

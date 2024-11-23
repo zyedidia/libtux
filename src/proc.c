@@ -4,6 +4,7 @@
 
 #include "arch_regs.h"
 
+#include "fd.h"
 #include "buf.h"
 #include "proc.h"
 #include "elf.h"
@@ -41,7 +42,7 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
     if (!procfile(p, prog, size, argc, argv))
         goto err3;
 
-    // TODO: initialize fdtable
+    fdinit(&p->fdtable);
 
     return p;
 err3:
@@ -170,7 +171,7 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
 
     // Reserve the brk region.
     const int mapflags = PAL_MAP_PRIVATE | PAL_MAP_ANONYMOUS;
-    asptr_t brkregion = pal_as_mapat(p->p_as, p->brkbase, BRKMAXSIZE, PAL_PROT_NONE, mapflags, -1, 0);
+    asptr_t brkregion = pal_as_mapat(p->p_as, p->brkbase, TUX_BRKMAXSIZE, PAL_PROT_NONE, mapflags, -1, 0);
     if (brkregion == (asptr_t) -1)
         return false;
 
