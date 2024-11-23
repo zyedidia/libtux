@@ -13,7 +13,10 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
         r = sys_write(proc, a0, a1, a2);
         break;
     case TUX_SYS_exit:
-        r = sys_exit(proc, a0);
+        sys_exit(proc, a0);
+        break;
+    case TUX_SYS_exit_group:
+        sys_exit_group(proc, a0);
         break;
     case TUX_SYS_brk:
         r = sys_brk(proc, a0);
@@ -29,6 +32,9 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
         break;
     case TUX_SYS_clock_gettime:
         r = sys_clock_gettime(proc, a0, a1);
+        break;
+    case TUX_SYS_ioctl:
+        r = sys_ioctl(proc, a0, a1, a2, a3, a4, a5);
         break;
     case TUX_SYS_set_tid_address:
         r = 0;
