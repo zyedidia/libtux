@@ -1,7 +1,7 @@
 project(
   'lfi',
   ['c'],
-  default_options: ['warning_level=1', 'buildtype=debugoptimized'],
+  default_options: ['warning_level=3', 'buildtype=debugoptimized'],
   meson_version: '>=0.60.3',
 )
 
@@ -15,6 +15,10 @@ c_args_hardened = [
   '-Werror=implicit',
   '-Werror=incompatible-pointer-types',
   '-Werror=int-conversion',
+]
+
+c_args_warnings = [
+  '-Wno-unused-parameter',
 ]
 
 has_auto_var_init = meson.get_compiler('c').has_argument('-ftrivial-auto-var-init=zero')

@@ -72,7 +72,7 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
     size_t pagesize = proc->tux->opts.pagesize;
 
     struct FileHeader ehdr;
-    ssize_t n = bufread(buf, &ehdr, sizeof(ehdr), 0);
+    size_t n = bufread(buf, &ehdr, sizeof(ehdr), 0);
     if (n != sizeof(ehdr)) {
         return false;
     }

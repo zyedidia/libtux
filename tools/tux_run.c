@@ -52,7 +52,7 @@ parse_opt(int key, char* arg, struct argp_state* state)
     return 0;
 }
 
-static struct argp argp = { options, parse_opt, args_doc, doc };
+static struct argp argp = { .options = options, .parser = parse_opt, .args_doc = args_doc, .doc = doc };
 
 struct Args args;
 

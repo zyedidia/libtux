@@ -82,7 +82,7 @@ sud_init(void)
 {
     struct sigaction sa;
     sa.sa_flags = SA_SIGINFO | SA_NODEFER;
-    sa.sa_sigaction = (void*) &handle_sigsys;
+    sa.sa_sigaction = &handle_sigsys;
     sigemptyset((sigset_t*) &sa.sa_mask);
     int r = sigaction(SIGSYS, &sa, NULL);
     if (r != 0) {
