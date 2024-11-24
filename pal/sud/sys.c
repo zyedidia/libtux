@@ -16,6 +16,9 @@
 extern void pal_sigsys_return(struct PlatContext* ctx)
     asm ("pal_sigsys_return");
 
+extern void pal_ctx_xmmsave(struct TuxRegs* regs)
+    asm ("pal_ctx_xmmsave");
+
 static volatile char filter = SYSCALL_DISPATCH_FILTER_ALLOW;
 
 void
@@ -40,32 +43,32 @@ handle_sigsys(int signo, siginfo_t* info, void* context)
 
     _writefsbase_u64(pal_myctx->ktp);
 
-    assert(pal_myctx->plat->syshandler && "platform has no syshandler!");
+    struct TuxRegs regs;
+    pal_ctx_xmmsave(&regs);
 
     ucontext_t* uctx = (ucontext_t*) context;
-    struct TuxRegs regs = (struct TuxRegs) {
-        .rsp = uctx->uc_mcontext.gregs[REG_RSP],
-        .rax = uctx->uc_mcontext.gregs[REG_RAX],
-        .rcx = uctx->uc_mcontext.gregs[REG_RCX],
-        .rdx = uctx->uc_mcontext.gregs[REG_RDX],
-        .rbx = uctx->uc_mcontext.gregs[REG_RBX],
-        .rbp = uctx->uc_mcontext.gregs[REG_RBP],
-        .rsi = uctx->uc_mcontext.gregs[REG_RSI],
-        .rdi = uctx->uc_mcontext.gregs[REG_RDI],
-        .r8 = uctx->uc_mcontext.gregs[REG_R8],
-        .r9 = uctx->uc_mcontext.gregs[REG_R9],
-        .r10 = uctx->uc_mcontext.gregs[REG_R10],
-        .r11 = uctx->uc_mcontext.gregs[REG_R11],
-        .r12 = uctx->uc_mcontext.gregs[REG_R12],
-        .r13 = uctx->uc_mcontext.gregs[REG_R13],
-        .r14 = uctx->uc_mcontext.gregs[REG_R14],
-        .r15 = uctx->uc_mcontext.gregs[REG_R15],
-        .fs = fs,
-        .gs = gs,
-    };
+    regs.rsp = uctx->uc_mcontext.gregs[REG_RSP],
+    regs.rax = uctx->uc_mcontext.gregs[REG_RAX],
+    regs.rdx = uctx->uc_mcontext.gregs[REG_RDX],
+    regs.rbx = uctx->uc_mcontext.gregs[REG_RBX],
+    regs.rbp = uctx->uc_mcontext.gregs[REG_RBP],
+    regs.rsi = uctx->uc_mcontext.gregs[REG_RSI],
+    regs.rdi = uctx->uc_mcontext.gregs[REG_RDI],
+    regs.r8 = uctx->uc_mcontext.gregs[REG_R8],
+    regs.r9 = uctx->uc_mcontext.gregs[REG_R9],
+    regs.r10 = uctx->uc_mcontext.gregs[REG_R10],
+    regs.r11 = uctx->uc_mcontext.gregs[REG_R11],
+    regs.r12 = uctx->uc_mcontext.gregs[REG_R12],
+    regs.r13 = uctx->uc_mcontext.gregs[REG_R13],
+    regs.r14 = uctx->uc_mcontext.gregs[REG_R14],
+    regs.r15 = uctx->uc_mcontext.gregs[REG_R15],
+    regs.fs = fs,
+    regs.gs = gs,
     // rcx is clobbered in the syscall abi so we can put the return address
     // there.
     regs.rcx = uctx->uc_mcontext.gregs[REG_RIP];
+
+    assert(pal_myctx->plat->syshandler && "platform has no syshandler!");
 
     pal_myctx->regs = regs;
 
