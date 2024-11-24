@@ -11,14 +11,15 @@ if cpuarch == 'x64'
   )
 endif
 
-mmap = subproject('libmmap').get_variable('mmap')
-boxmap = subproject('libboxmap').get_variable('boxmap')
+mmap = subproject('libmmap')
+boxmap = subproject('libboxmap')
 
 libpal_sud = static_library(
   'pal_sud',
   srcs,
-  c_args: c_args_hardened + c_args_warnings + ['-mfsgsbase'],
-  dependencies: [libtux_dep, mmap.as_link_whole(), boxmap.as_link_whole()],
+  c_args: c_args_hardened + c_args_warnings,
+  dependencies: [libtux_dep, mmap.get_variable('mmap'), boxmap.get_variable('boxmap')],
+  link_whole: [mmap.get_variable('libmmap'), boxmap.get_variable('libboxmap')],
   include_directories: include_directories('include'),
   install: true,
 )

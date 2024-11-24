@@ -1,5 +1,5 @@
 [wrap-git]
-url = https://github.com/argp-standalone/argp-standalone
-revision = 8ded2bc
+url = https://github.com/zyedidia/argp-standalone
+revision = master
 directory = libargp
 patch_directory = libargp

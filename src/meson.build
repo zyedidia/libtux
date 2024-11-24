@@ -11,14 +11,15 @@ srcs = files(
 subdir('syscalls')
 subdir('arch/' + cpuarch)
 
-cwalk_dep = subproject('cwalk').get_variable('cwalk_dep')
+cwalk = subproject('cwalk')
 
 libtux = static_library(
   'tux',
   srcs,
   c_args: c_args_hardened + c_args_warnings,
   include_directories: include_directories('include', 'arch/' + cpuarch),
-  dependencies: [cwalk_dep.as_link_whole()],
+  dependencies: cwalk.get_variable('cwalk_dep'),
+  link_whole: cwalk.get_variable('libcwalk'),
   install: true,
 )
 

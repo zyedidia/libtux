@@ -189,7 +189,7 @@ filefnew(FILE* kfile, int flags)
         .write = filewrite,
         .lseek = filelseek,
         .close = fileclose,
-        .stat = filestat,
+        .stat_ = filestat,
         .getdents = filegetdents,
         .mapfd = filemapfd,
     };

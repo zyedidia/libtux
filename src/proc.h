@@ -25,7 +25,7 @@ struct FDFile {
     ssize_t (*write)(void*, struct TuxProc*, uint8_t*, size_t);
     ssize_t (*lseek)(void*, struct TuxProc*, off_t, int);
     int     (*close)(void*, struct TuxProc*);
-    int     (*stat)(void*, struct TuxProc*, struct Stat*);
+    int     (*stat_)(void*, struct TuxProc*, struct Stat*);
     ssize_t (*getdents)(void*, struct TuxProc*, void*, size_t);
     int     (*mapfd)(void*);
 };

@@ -8,24 +8,39 @@ project(
 add_project_arguments('-D_LARGEFILE64_SOURCE', '-D_FILE_OFFSET_BITS=64', '-Werror=implicit-function-declaration', language: 'c')
 
 # Enable various hardening flags
-c_args_hardened = [
-  '-fno-strict-aliasing',
-  '-fno-delete-null-pointer-checks',
-  '-fno-strict-overflow',
-  '-Werror=implicit',
-  '-Werror=incompatible-pointer-types',
-  '-Werror=int-conversion',
-]
-
-c_args_warnings = [
-  '-Wno-unused-parameter',
-  '-Wno-language-extension-token',          # for asm ("name")
-  '-Wno-gnu-zero-variadic-macro-arguments', # for ##__VA_ARGS__ in print macros
-]
-
-has_auto_var_init = meson.get_compiler('c').has_argument('-ftrivial-auto-var-init=zero')
-if has_auto_var_init
+cc = meson.get_compiler('c')
+c_args_hardened = []
+if cc.has_argument('-fno-strict-aliasing')
+  c_args_hardened += '-fno-strict-aliasing'
+endif
+if cc.has_argument('-fno-delete-null-pointer-checks')
+  c_args_hardened += '-fno-delete-null-pointer-checks'
+endif
+if cc.has_argument('-fno-strict-overflow')
+  c_args_hardened += '-fno-strict-overflow'
+endif
+if cc.has_argument('-Werror=implicit')
+  c_args_hardened += '-Werror=implicit'
+endif
+if cc.has_argument('-Werror=incompatible-pointer-types')
+  c_args_hardened += '-Werror=incompatible-pointer-types'
+endif
+if cc.has_argument('-Werror=int-conversion')
+  c_args_hardened += '-Werror=int-conversion'
+endif
+if cc.has_argument('-ftrivial-auto-var-init=zero')
   c_args_hardened += '-ftrivial-auto-var-init=zero'
+endif
+
+c_args_warnings = []
+if cc.has_argument('-Wno-unused-parameter')
+  c_args_warnings += '-Wno-unused-parameter'
+endif
+if cc.has_argument('-Wno-language-extension-token') # suppress warnings for asm ("name")
+  c_args_warnings += '-Wno-language-extension-token'
+endif
+if cc.has_argument('-Wno-gnu-zero-variadic-macro-arguments') # suppress warnings for ##__VA_ARGS__ in print macros
+  c_args_warnings += '-Wno-gnu-zero-variadic-macro-arguments'
 endif
 
 cpu = target_machine.cpu_family()

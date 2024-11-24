@@ -65,12 +65,13 @@ if host_machine.system() != 'windows'
 	argp_library = static_library('argp',
 		argp_source,
 		include_directories : '.',
-        c_args: ['-w'],
+        c_args: ['-Wno-unused-parameter'],
 	)
 else
 	argp_library = static_library('argp',
 		argp_source,
 		include_directories : '.',
+        c_args: ['-Wno-unused-parameter'],
 )
 endif
 

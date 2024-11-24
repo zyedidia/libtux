@@ -118,6 +118,19 @@ pal_ctx_xmmsave:
 	movq %xmm15, 18*8+16*15(%rdi)
 	ret
 
+.global readfsbase_u64
+readfsbase_u64:
+	rdfsbase %rax
+	ret
+.global readgsbase_u64
+readgsbase_u64:
+	rdgsbase %rax
+	ret
+.global writefsbase_u64
+writefsbase_u64:
+	wrfsbase %rdi
+	ret
+
 .p2align 4
 .global sud_rt_restore
 sud_rt_restore:

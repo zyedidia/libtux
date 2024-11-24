@@ -97,14 +97,17 @@ sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode)
     if (!path)
         return -TUX_EFAULT;
     struct FDFile* f = filenew(p->tux, p->cwd.name, path, flags, mode);
-    VERBOSE(p->tux, "open %s: %p", path, (void*) f);
-    if (!f)
+    if (!f) {
+        VERBOSE(p->tux, "sys_open(\"%s\") = %d", path, -TUX_ENOENT);
         return -TUX_ENOENT;
+    }
     int fd = fdalloc(&p->fdtable);
     if (fd < 0) {
         fdrelease(f, p);
+        VERBOSE(p->tux, "sys_open(\"%s\") = %d", path, -TUX_EMFILE);
         return -TUX_EMFILE;
     }
+    VERBOSE(p->tux, "sys_open(\"%s\") = %d", path, fd);
     fdassign(&p->fdtable, fd, f);
     return fd;
 }
@@ -175,7 +178,7 @@ sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t stat
     struct FDFile* f = fdget(&p->fdtable, dirfd);
     if (!f)
         return -TUX_EBADF;
-    if (!f->stat)
+    if (!f->stat_)
         return -TUX_EACCES;
-    return f->stat(f->dev, p, stat);
+    return f->stat_(f->dev, p, stat);
 }

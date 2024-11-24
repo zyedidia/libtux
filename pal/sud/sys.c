@@ -8,10 +8,10 @@
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 
-#include <immintrin.h>
-
 #include "tux_pal.h"
 #include "platform.h"
+
+#define asm __asm__
 
 extern void pal_sigsys_return(struct PlatContext* ctx)
     asm ("pal_sigsys_return");
@@ -19,7 +19,14 @@ extern void pal_sigsys_return(struct PlatContext* ctx)
 extern void pal_ctx_xmmsave(struct TuxRegs* regs)
     asm ("pal_ctx_xmmsave");
 
-static volatile char filter = SYSCALL_DISPATCH_FILTER_ALLOW;
+extern uint64_t readfsbase_u64(void)
+    asm ("readfsbase_u64");
+extern uint64_t readgsbase_u64(void)
+    asm ("readgsbase_u64");
+extern void writefsbase_u64(uint64_t fs)
+    asm ("writefsbase_u64");
+
+static char filter = SYSCALL_DISPATCH_FILTER_ALLOW;
 
 void
 sud_block(void)
@@ -38,10 +45,10 @@ handle_sigsys(int signo, siginfo_t* info, void* context)
 {
     sud_allow();
 
-    uint64_t gs = _readgsbase_u64();
-    uint64_t fs = _readfsbase_u64();
+    uint64_t gs = readgsbase_u64();
+    uint64_t fs = readfsbase_u64();
 
-    _writefsbase_u64(pal_myctx->ktp);
+    writefsbase_u64(pal_myctx->ktp);
 
     struct TuxRegs regs;
     pal_ctx_xmmsave(&regs);

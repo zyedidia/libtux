@@ -1,18 +1,21 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include <immintrin.h>
-
 #include "platform.h"
 
 // TODO: make this thread-local with TID.
 struct PlatContext* pal_myctx;
+
+#define asm __asm__
 
 extern uint64_t pal_ctx_entry(struct PlatContext* ctx, void** kstackp)
     asm ("pal_ctx_entry");
 
 extern void pal_asm_ctx_exit(void* kstackp, uint64_t val)
     asm ("pal_asm_ctx_exit");
+
+extern uint64_t readfsbase_u64(void)
+    asm ("readfsbase_u64");
 
 struct PlatContext*
 pal_ctx_new(struct Platform* plat, void* ctxp)
@@ -23,7 +26,7 @@ pal_ctx_new(struct Platform* plat, void* ctxp)
     *ctx = (struct PlatContext) {
         .ctxp = ctxp,
         .plat = plat,
-        .ktp = _readfsbase_u64(),
+        .ktp = readfsbase_u64(),
     };
     return ctx;
 }
