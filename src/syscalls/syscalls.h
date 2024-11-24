@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string.h>
+#include <errno.h>
 
 #include "print.h"
 #include "tux_pal.h"
@@ -29,6 +30,27 @@ enum {
     TUX_PROT_READ  = 1,
     TUX_PROT_WRITE = 2,
     TUX_PROT_EXEC  = 4,
+};
+
+enum {
+    TUX_SEEK_SET  = 0,
+    TUX_SEEK_CUR  = 1,
+    TUX_SEEK_END  = 2,
+};
+
+enum {
+    TUX_O_RDONLY  = 0x0,
+    TUX_O_WRONLY  = 0x1,
+    TUX_O_RDWR    = 0x2,
+    TUX_O_CREAT   = 0x40,
+    TUX_O_TRUNC   = 0x200,
+    TUX_O_APPEND  = 0x400,
+    TUX_O_CLOEXEC = 0x80000,
+};
+
+enum {
+    TUX_AT_FDCWD      = -100,
+    TUX_AT_EMPTY_PATH = 0x1000,
 };
 
 static inline asptr_t
@@ -91,6 +113,14 @@ palflags(int flags)
         ((flags & TUX_MAP_PRIVATE) ? PAL_MAP_PRIVATE : 0);
 }
 
+static inline int
+syserr(int val)
+{
+    if (val == -1)
+        return -errno;
+    return val;
+}
+
 ssize_t sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size);
 
 void sys_exit(struct TuxProc* p, int val);
@@ -99,7 +129,7 @@ uintptr_t sys_brk(struct TuxProc* p, asuserptr_t addr);
 
 int sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode);
 
-ssize_t sys_writev(struct TuxProc* p, int fd, uintptr_t iovp, ssize_t iovcnt);
+ssize_t sys_writev(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt);
 
 int sys_uname(struct TuxProc* p, asuserptr_t bufp);
 
@@ -124,3 +154,13 @@ int sys_munmap(struct TuxProc* p, asuserptr_t addrup, size_t length);
 ssize_t sys_readlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t bufp, size_t size);
 
 ssize_t sys_readlink(struct TuxProc* p, asuserptr_t pathp, asuserptr_t bufp, size_t size);
+
+int sys_close(struct TuxProc* p, int fd);
+
+ssize_t sys_read(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size);
+
+ssize_t sys_readv(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt);
+
+ssize_t sys_pread64(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size, ssize_t offset);
+
+int sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t statbufp, int flags);

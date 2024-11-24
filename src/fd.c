@@ -3,6 +3,7 @@
 
 #include "fd.h"
 #include "file.h"
+#include "syscalls/syscalls.h"
 
 void
 fdassign(struct FDTable* t, int fd, struct FDFile* ff)
@@ -71,7 +72,7 @@ fdclear(struct FDTable* t, struct TuxProc* p)
 void
 fdinit(struct FDTable* t)
 {
-    fdassign(t, 0, filefnew(stdin));
-    fdassign(t, 1, filefnew(stdout));
-    fdassign(t, 2, filefnew(stderr));
+    fdassign(t, 0, filefnew(stdin, TUX_O_RDONLY));
+    fdassign(t, 1, filefnew(stdout, TUX_O_WRONLY));
+    fdassign(t, 2, filefnew(stderr, TUX_O_WRONLY));
 }

@@ -3,12 +3,16 @@
 #include "tux_pal.h"
 
 enum {
+    TUX_SYS_read               = 0,
     TUX_SYS_write              = 1,
+    TUX_SYS_close              = 3,
     TUX_SYS_mmap               = 9,
     TUX_SYS_mprotect           = 10,
     TUX_SYS_munmap             = 11,
     TUX_SYS_brk                = 12,
     TUX_SYS_ioctl              = 16,
+    TUX_SYS_pread64            = 17,
+    TUX_SYS_readv              = 19,
     TUX_SYS_writev             = 20,
     TUX_SYS_access             = 21,
     TUX_SYS_exit               = 60,

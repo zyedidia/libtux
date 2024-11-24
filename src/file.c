@@ -2,10 +2,13 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
+#include <sys/stat.h>
+
 #include "print.h"
 #include "cwalk.h"
 #include "file.h"
 #include "proc.h"
+#include "syscalls/syscalls.h"
 
 static char*
 fopenflags(int flags)
@@ -50,10 +53,17 @@ openflags(int flags)
 }
 
 struct FDFile*
-filenew(struct Tux* tux, const char* dir, const char* name, int flags, int mode)
+filenew(struct Tux* tux, const char* dir, const char* path, int flags, int mode)
 {
-    char path[TUX_PATH_MAX];
-    cwk_path_join(dir, name, path, sizeof(path));
+    char buffer[TUX_PATH_MAX];
+    if (!cwk_path_is_absolute(path)) {
+        cwk_path_join(dir, path, buffer, sizeof(buffer));
+        path = buffer;
+    }
+
+    int fullflags = flags;
+    if ((flags & TUX_O_CLOEXEC) != 0)
+        flags &= ~TUX_O_CLOEXEC;
 
     char* fflags = fopenflags(flags);
     if (!fflags)
@@ -63,15 +73,15 @@ filenew(struct Tux* tux, const char* dir, const char* name, int flags, int mode)
     if (fd < 0)
         return NULL;
     FILE* f = fdopen(fd, fflags);
-    assert(f);
+    assert(f); // must succeed
 
-    return filefnew(f);
+    return filefnew(f, fullflags);
 }
 
 static FILE*
 filef(void* dev)
 {
-    return (FILE*) dev;
+    return ((struct File*) dev)->file;
 }
 
 static ssize_t
@@ -114,10 +124,36 @@ fileclose(void* dev, struct TuxProc* p)
     return fclose(filef(dev));
 }
 
+int
+filefstatat(const char* dir, const char* path, struct Stat* stat, int flags)
+{
+    assert(!"unimplemented");
+}
+
 static int
 filestat(void* dev, struct TuxProc* p, struct Stat* statbuf)
 {
-    assert(!"unimplemented");
+    struct stat stat;
+    int err = syserr(fstat(fileno(filef(dev)), &stat));
+    if (err < 0)
+        return err;
+    statbuf->st_dev = stat.st_dev;
+    statbuf->st_ino = stat.st_ino;
+    statbuf->st_nlink = stat.st_nlink;
+    statbuf->st_mode = stat.st_mode;
+    statbuf->st_uid = stat.st_uid;
+    statbuf->st_gid = stat.st_gid;
+    statbuf->st_rdev = stat.st_rdev;
+    statbuf->st_size = stat.st_size;
+    statbuf->st_blksize = stat.st_blksize;
+    statbuf->st_blocks = stat.st_blocks;
+    statbuf->st_atim.sec  = stat.st_atim.tv_sec;
+    statbuf->st_atim.nsec = stat.st_atim.tv_nsec;
+    statbuf->st_mtim.sec  = stat.st_mtim.tv_sec;
+    statbuf->st_mtim.nsec = stat.st_mtim.tv_nsec;
+    statbuf->st_ctim.sec  = stat.st_ctim.tv_sec;
+    statbuf->st_ctim.nsec = stat.st_ctim.tv_nsec;
+    return 0;
 }
 
 static ssize_t
@@ -129,17 +165,24 @@ filegetdents(void* dev, struct TuxProc* p, void* dirp, size_t count)
 static int
 filemapfd(void* dev)
 {
-    assert(!"unimplemented");
+    return fileno(filef(dev));
 }
 
 struct FDFile*
-filefnew(FILE* kfile)
+filefnew(FILE* kfile, int flags)
 {
+    struct File* f = malloc(sizeof(struct File));
+    if (!f)
+        goto err1;
+    *f = (struct File) {
+        .file = kfile,
+        .flags = flags,
+    };
     struct FDFile* ff = malloc(sizeof(struct FDFile));
     if (!ff)
-        return NULL;
+        goto err2;
     *ff = (struct FDFile) {
-        .dev = (void*) kfile,
+        .dev = f,
         .refs = 0,
         .read = fileread,
         .write = filewrite,
@@ -150,4 +193,8 @@ filefnew(FILE* kfile)
         .mapfd = filemapfd,
     };
     return ff;
+err2:
+    free(f);
+err1:
+    return NULL;
 }

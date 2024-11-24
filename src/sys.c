@@ -12,6 +12,9 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     case TUX_SYS_write:
         r = sys_write(proc, a0, a1, a2);
         break;
+    case TUX_SYS_read:
+        r = sys_read(proc, a0, a1, a2);
+        break;
     case TUX_SYS_exit:
         sys_exit(proc, a0);
         break;
@@ -24,8 +27,17 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     case TUX_SYS_openat:
         r = sys_openat(proc, a0, a1, a2, a3);
         break;
+    case TUX_SYS_close:
+        r = sys_close(proc, a0);
+        break;
     case TUX_SYS_writev:
         r = sys_writev(proc, a0, a1, a2);
+        break;
+    case TUX_SYS_readv:
+        r = sys_readv(proc, a0, a1, a2);
+        break;
+    case TUX_SYS_pread64:
+        r = sys_pread64(proc, a0, a1, a2, a3);
         break;
     case TUX_SYS_mmap:
         r = sys_mmap(proc, a0, a1,a2, a3, a4, a5);
@@ -37,7 +49,7 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
         r = sys_munmap(proc, a0, a1);
         break;
     case TUX_SYS_newfstatat:
-        r = -TUX_ENOSYS;
+        r = sys_newfstatat(proc, a0, a1, a2, a3);
         break;
     case TUX_SYS_getrandom:
         r = sys_getrandom(proc, a0, a1, a2);

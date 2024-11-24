@@ -7,6 +7,8 @@
 #include "tux.h"
 #include "tux_pal.h"
 
+#include "arch_types.h"
+
 enum {
     TUX_PATH_MAX   = 4096,
     TUX_NOFILE     = 128,
@@ -14,8 +16,6 @@ enum {
 };
 
 struct TuxProc;
-
-struct Stat;
 
 struct FDFile {
     void* dev;
