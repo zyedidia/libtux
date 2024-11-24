@@ -3,6 +3,7 @@
 #include <argp.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include "tux.h"
 #include "sud.h"
@@ -21,6 +22,7 @@ enum {
 struct Args {
     char* inputs[INPUTMAX];
     size_t ninputs;
+    bool verbose;
 };
 
 static char doc[] = "tux-run: libtux runner";
@@ -29,6 +31,7 @@ static char args_doc[] = "INPUT...";
 
 static struct argp_option options[] = {
     { "help",           'h',               0,      0, "show this message", -1 },
+    { "verbose",        'V',               0,      0, "show verbose output", -1 },
     { 0 },
 };
 
@@ -40,6 +43,9 @@ parse_opt(int key, char* arg, struct argp_state* state)
     switch (key) {
     case 'h':
         argp_state_help(state, state->out_stream, ARGP_HELP_STD_HELP);
+        break;
+    case 'V':
+        args->verbose = true;
         break;
     case ARGP_KEY_ARG:
         if (args->ninputs < INPUTMAX)
@@ -77,6 +83,7 @@ main(int argc, char** argv)
     struct Tux* tux = tux_new(plat, (struct TuxOptions) {
         .pagesize = getpagesize(),
         .stacksize = mb(2),
+        .verbose = args.verbose,
     });
 
     buf_t f = bufreadfile(args.inputs[0]);

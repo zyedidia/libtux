@@ -33,6 +33,9 @@ arch_syshandle(struct PlatContext* ctx)
     case TUX_SYS_arch_prctl:
         regs->rax = sys_arch_prctl(proc, regs->rdi, regs->rsi);
         break;
+    case TUX_SYS_readlink:
+        regs->rax = sys_readlink(proc, regs->rdi, regs->rsi, regs->rdx);
+        break;
     default:
         // Generic syscalls.
         regs->rax = syshandle(proc, regs->rax, regs->rdi, regs->rsi, regs->rdx,

@@ -2,10 +2,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 struct TuxOptions {
     size_t pagesize;
     size_t stacksize;
+    bool verbose;
 };
 
 struct Platform;

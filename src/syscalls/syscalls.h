@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "print.h"
 #include "tux_pal.h"
 #include "proc.h"
 
@@ -9,10 +10,25 @@ enum {
     TUX_EPERM  = 1,
     TUX_ENOENT = 2,
     TUX_EBADF  = 9,
+    TUX_EACCES = 13,
     TUX_EFAULT = 14,
     TUX_EINVAL = 22,
     TUX_EMFILE = 24,
     TUX_ENOSYS = 38,
+};
+
+enum {
+    TUX_MAP_PRIVATE   = 2,
+    TUX_MAP_FIXED     = 16,
+    TUX_MAP_ANONYMOUS = 32,
+    TUX_MAP_DENYWRITE = 2048,
+    TUX_MAP_NORESERVE = 16384,
+};
+
+enum {
+    TUX_PROT_READ  = 1,
+    TUX_PROT_WRITE = 2,
+    TUX_PROT_EXEC  = 4,
 };
 
 static inline asptr_t
@@ -60,6 +76,21 @@ procpath(struct TuxProc* p, asuserptr_t pathp)
     return str;
 }
 
+static inline int
+palprot(int prot)
+{
+    return ((prot & TUX_PROT_READ) ? PAL_PROT_READ : 0) |
+        ((prot & TUX_PROT_WRITE) ? PAL_PROT_WRITE : 0) |
+        ((prot & TUX_PROT_EXEC) ? PAL_PROT_EXEC : 0);
+}
+
+static inline int
+palflags(int flags)
+{
+    return ((flags & TUX_MAP_ANONYMOUS) ? PAL_MAP_ANONYMOUS : 0) |
+        ((flags & TUX_MAP_PRIVATE) ? PAL_MAP_PRIVATE : 0);
+}
+
 ssize_t sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size);
 
 void sys_exit(struct TuxProc* p, int val);
@@ -82,3 +113,14 @@ void sys_exit_group(struct TuxProc* p, int code);
 
 int sys_ioctl(struct TuxProc* p, int fd, unsigned long request, uintptr_t va0,
         uintptr_t va1, uintptr_t va2, uintptr_t va3);
+
+uintptr_t sys_mmap(struct TuxProc* p, asuserptr_t addrup, size_t length,
+        int prot, int flags, int fd, off_t off);
+
+int sys_mprotect(struct TuxProc* p, asuserptr_t addrup, size_t length, int prot);
+
+int sys_munmap(struct TuxProc* p, asuserptr_t addrup, size_t length);
+
+ssize_t sys_readlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t bufp, size_t size);
+
+ssize_t sys_readlink(struct TuxProc* p, asuserptr_t pathp, asuserptr_t bufp, size_t size);

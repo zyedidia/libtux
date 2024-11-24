@@ -1,4 +1,9 @@
 #include <stdalign.h>
+#include <errno.h>
+
+// TODO: for readlinkat, not portable
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "syscalls/syscalls.h"
 
@@ -56,7 +61,7 @@ sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode)
     if (!path)
         return -TUX_EFAULT;
     struct FDFile* f = filenew(p->tux, p->cwd.name, path, flags, mode);
-    printf("open %s\n", path);
+    VERBOSE(p->tux, "open %s\n", path);
     if (!f)
         return -TUX_ENOENT;
     int fd = fdalloc(&p->fdtable);
@@ -66,4 +71,25 @@ sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode)
     }
     fdassign(&p->fdtable, fd, f);
     return fd;
+}
+
+ssize_t
+sys_readlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t bufp, size_t size)
+{
+    if (dirfd != TUX_AT_FDCWD)
+        return -TUX_EINVAL;
+    const char* path = procpath(p, pathp);
+    uint8_t* buf = procbuf(p, bufp, size);
+    if (!path || !buf)
+        return -TUX_EFAULT;
+    int r = readlinkat(AT_FDCWD, path, (char*) buf, size);
+    if (r < 0)
+        return -errno;
+    return r;
+}
+
+ssize_t
+sys_readlink(struct TuxProc* p, asuserptr_t pathp, asuserptr_t bufp, size_t size)
+{
+    return sys_readlinkat(p, TUX_AT_FDCWD, pathp, bufp, size);
 }

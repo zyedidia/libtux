@@ -73,6 +73,23 @@ asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot, int flag
     return 0;
 }
 
+asptr_t
+pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, int fd, off_t off)
+{
+    prot = mmapprot(prot);
+    flags = mmapflags(flags);
+
+    asptr_t addr = mm_mapany(&as->mm, size, prot, flags, fd, off);
+    if (addr == (asptr_t) -1)
+        return 0;
+    int r = asmap(as, addr, size, prot, flags, fd, off);
+    if (r < 0) {
+        mm_unmap(&as->mm, addr, size);
+        return (asptr_t) -1;
+    }
+    return addr;
+}
+
 static void
 cbunmap(uintptr_t start, size_t len, MMInfo info, void* udata)
 {
@@ -112,7 +129,9 @@ pal_as_mprotect(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot)
 int
 pal_as_munmap(struct PlatAddrSpace* as, asptr_t addr, size_t size)
 {
-    assert(!"unimplemented");
+    if (addr >= as->minaddr && addr + size < as->maxaddr)
+        return mm_unmap_cb(&as->mm, addr, size, cbunmap, NULL);
+    return -1;
 }
 
 void

@@ -4,6 +4,9 @@
 
 enum {
     TUX_SYS_write              = 1,
+    TUX_SYS_mmap               = 9,
+    TUX_SYS_mprotect           = 10,
+    TUX_SYS_munmap             = 11,
     TUX_SYS_brk                = 12,
     TUX_SYS_ioctl              = 16,
     TUX_SYS_writev             = 20,
@@ -15,6 +18,7 @@ enum {
     TUX_SYS_clock_gettime      = 228,
     TUX_SYS_exit_group         = 231,
     TUX_SYS_openat             = 257,
+    TUX_SYS_newfstatat         = 262,
     TUX_SYS_set_robust_list    = 273,
     TUX_SYS_prlimit64          = 302,
     TUX_SYS_getrandom          = 318,

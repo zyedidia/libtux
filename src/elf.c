@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "print.h"
 #include "align.h"
 #include "buf.h"
 #include "elf.h"
@@ -140,7 +141,7 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
             goto err1;
         }
 
-        printf("load %lx %lx (P: %d)\n", base + start, base + end, pflags(p->flags));
+        VERBOSE(proc->tux, "load %lx %lx (P: %d)", base + start, base + end, pflags(p->flags));
 
         if (!bufreadelfseg(proc, base + start, offset, base + end, p->offset, p->filesz, pflags(p->flags), buf, pagesize))
             goto err1;

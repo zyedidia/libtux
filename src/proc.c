@@ -1,13 +1,17 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <errno.h>
 
 #include "arch_regs.h"
 
+#include "print.h"
 #include "fd.h"
 #include "buf.h"
 #include "proc.h"
 #include "elf.h"
+
+#include "syscalls/syscalls.h"
 
 static bool procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, int argc, char** argv);
 static bool procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv);
@@ -62,10 +66,11 @@ procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv)
     if (interppath) {
         interp = bufreadfile(interppath);
         if (!interp.data) {
-            fprintf(stderr, "error opening dynamic linker %s: %s\n", interppath, strerror(errno));
+            WARN(p->tux, "error opening dynamic linker %s: %s", interppath, strerror(errno));
             free(interppath);
             return false;
         }
+        VERBOSE(p->tux, "dynamic linker: %s", interppath);
         free(interppath);
     }
 
@@ -113,6 +118,7 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
     *newsp = (asptr_t) p_argc;
     *p_argc++ = argc;
     char** p_argvp = (char**) p_argc;
+    char** p_argvp_start = p_argvp;
     for (int i = 0; i < argc; i++) {
         if ((uintptr_t) p_argvp >= (uintptr_t) stack_top - ARG_BLOCK) {
             return false;
@@ -131,11 +137,11 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
     *av++ = (struct Auxv) { AT_PHNUM, info->elfphnum };
     *av++ = (struct Auxv) { AT_PHENT, info->elfphentsize };
     *av++ = (struct Auxv) { AT_ENTRY, info->elfentry };
-    *av++ = (struct Auxv) { AT_EXECFN, pal_as_p2user(p->p_as, p_argvp[0]) };
-    *av++ = (struct Auxv) { AT_PAGESZ, getpagesize() };
+    *av++ = (struct Auxv) { AT_EXECFN, pal_as_p2user(p->p_as, p_argvp_start[0]) };
+    *av++ = (struct Auxv) { AT_PAGESZ, p->tux->opts.pagesize };
     *av++ = (struct Auxv) { AT_HWCAP, 0 };
     *av++ = (struct Auxv) { AT_HWCAP2, 0 };
-    *av++ = (struct Auxv) { AT_RANDOM, info->elfentry }; // TODO
+    *av++ = (struct Auxv) { AT_RANDOM, pal_as_p2user(p->p_as, p_argvp_start[0]) }; // TODO
     *av++ = (struct Auxv) { AT_FLAGS, 0 };
     *av++ = (struct Auxv) { AT_UID, 1000 };
     *av++ = (struct Auxv) { AT_EUID, 1000 };
@@ -176,6 +182,51 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
         return false;
 
     return true;
+}
+
+int
+procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd,
+        off_t offset, asptr_t* o_mapstart)
+{
+    int kfd = -1;
+    if (fd >= 0) {
+        struct FDFile* f = fdget(&p->fdtable, fd);
+        if (!f)
+            return -TUX_EBADF;
+        if (!f->mapfd)
+            return -TUX_EACCES;
+        kfd = f->mapfd(f->dev);
+    }
+    asptr_t addr = pal_as_mapany(p->p_as, size, palprot(prot), palflags(flags), kfd, offset);
+    if (addr == (asptr_t) -1)
+        return -TUX_EINVAL;
+    *o_mapstart = (uintptr_t) addr;
+    return 0;
+}
+
+int
+procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags,
+        int fd, off_t offset)
+{
+    int kfd = -1;
+    if (fd >= 0) {
+        struct FDFile* f = fdget(&p->fdtable, fd);
+        if (!f)
+            return -TUX_EBADF;
+        if (!f->mapfd)
+            return -TUX_EACCES;
+        kfd = f->mapfd(f->dev);
+    }
+    asptr_t addr = pal_as_mapat(p->p_as, start, size, palprot(prot), palflags(flags), kfd, offset);
+    if (addr == (asptr_t) -1)
+        return -TUX_EINVAL;
+    return 0;
+}
+
+int
+procunmap(struct TuxProc* p, asptr_t start, size_t size)
+{
+    return pal_as_munmap(p->p_as, start, size);
 }
 
 static void

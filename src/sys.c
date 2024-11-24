@@ -7,7 +7,7 @@ uintptr_t
 syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
         uintptr_t a2, uintptr_t a3, uintptr_t a4, uintptr_t a5)
 {
-    uintptr_t r = -1;
+    uintptr_t r = -TUX_ENOSYS;
     switch (sysno) {
     case TUX_SYS_write:
         r = sys_write(proc, a0, a1, a2);
@@ -26,6 +26,18 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
         break;
     case TUX_SYS_writev:
         r = sys_writev(proc, a0, a1, a2);
+        break;
+    case TUX_SYS_mmap:
+        r = sys_mmap(proc, a0, a1,a2, a3, a4, a5);
+        break;
+    case TUX_SYS_mprotect:
+        r = sys_mprotect(proc, a0, a1, a2);
+        break;
+    case TUX_SYS_munmap:
+        r = sys_munmap(proc, a0, a1);
+        break;
+    case TUX_SYS_newfstatat:
+        r = -TUX_ENOSYS;
         break;
     case TUX_SYS_getrandom:
         r = sys_getrandom(proc, a0, a1, a2);
@@ -51,12 +63,10 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     case TUX_SYS_prlimit64:
         r = -TUX_ENOSYS;
         break;
-    case TUX_SYS_readlink:
-        r = -TUX_ENOSYS;
-        break;
     default:
         fprintf(stderr, "unknown syscall: %ld\n", sysno);
         assert(!"unhandled syscall");
     }
+
     return r;
 }
