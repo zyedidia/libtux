@@ -66,7 +66,7 @@ procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv)
     if (interppath) {
         interp = bufreadfile(interppath);
         if (!interp.data) {
-            WARN(p->tux, "error opening dynamic linker %s: %s", interppath, strerror(errno));
+            WARN("error opening dynamic linker %s: %s", interppath, strerror(errno));
             free(interppath);
             return false;
         }

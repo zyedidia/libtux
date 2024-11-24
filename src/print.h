@@ -13,17 +13,17 @@
             fprintf(stderr, "[libtux] " fmt "\n", ##__VA_ARGS__);                       \
     } while (0)
 
-#define INFO(tux, fmt, ...)                                                             \
+#define INFO(fmt, ...)                                                                  \
     do {                                                                                \
         fprintf(stderr, SGR_INFO "[libtux] " fmt SGR_RESET "\n", ##__VA_ARGS__);        \
     } while (0)
 
-#define WARN(tux, fmt, ...)                                                             \
+#define WARN(fmt, ...)                                                                  \
     do {                                                                                \
         fprintf(stderr, SGR_WARN "[libtux] WARN: " fmt SGR_RESET "\n", ##__VA_ARGS__);  \
     } while (0)
 
-#define DBG(tux, fmt, ...)                                                              \
+#define DBG(fmt, ...)                                                                   \
     do {                                                                                \
         fprintf(stderr, SGR_DEBUG "[libtux]: " fmt SGR_RESET "\n", ##__VA_ARGS__);      \
     } while (0)

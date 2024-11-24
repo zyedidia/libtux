@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
+#include "print.h"
 #include "cwalk.h"
 #include "file.h"
 #include "proc.h"
@@ -23,7 +24,7 @@ fopenflags(int flags)
     case TUX_O_RDWR | TUX_O_CREAT | TUX_O_APPEND:
         return "a+";
     }
-    fprintf(stderr, "invalid fopen flags\n");
+    WARN("invalid fopen flags: %x", flags);
     return NULL;
 }
 
@@ -44,7 +45,7 @@ openflags(int flags)
     case TUX_O_RDWR | TUX_O_CREAT | TUX_O_APPEND:
         return O_RDWR | O_CREAT | O_APPEND;
     }
-    fprintf(stderr, "invalid open flags\n");
+    WARN("invalid open flags: %x", flags);
     return -1;
 }
 
