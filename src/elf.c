@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "engine.h"
 #include "print.h"
 #include "align.h"
 #include "buf.h"

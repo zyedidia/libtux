@@ -121,7 +121,8 @@ filelseek(void* dev, struct TuxProc* p, off_t off, int whence)
 static int
 fileclose(void* dev, struct TuxProc* p)
 {
-    return fclose(filef(dev));
+    int x = fclose(filef(dev));
+    return x;
 }
 
 int
@@ -197,4 +198,12 @@ err2:
     free(f);
 err1:
     return NULL;
+}
+
+// The FDFile must be a File.
+void
+filefree(struct FDFile* file)
+{
+    free((struct File*) file->dev);
+    free(file);
 }

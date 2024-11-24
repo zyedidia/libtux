@@ -21,4 +21,4 @@ bool fdhas(struct FDTable* t, int fd);
 
 void fdclear(struct FDTable* t, struct TuxProc* p);
 
-void fdinit(struct FDTable* t);
+void fdinit(struct Tux* tux, struct FDTable* t);

@@ -12,10 +12,7 @@ struct TuxOptions {
 
 struct Platform;
 
-struct Tux {
-    struct Platform* plat;
-    struct TuxOptions opts;
-};
+struct Tux;
 
 struct TuxProc;
 

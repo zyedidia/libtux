@@ -70,9 +70,9 @@ fdclear(struct FDTable* t, struct TuxProc* p)
 }
 
 void
-fdinit(struct FDTable* t)
+fdinit(struct Tux* tux, struct FDTable* t)
 {
-    fdassign(t, 0, filefnew(stdin, TUX_O_RDONLY));
-    fdassign(t, 1, filefnew(stdout, TUX_O_WRONLY));
-    fdassign(t, 2, filefnew(stderr, TUX_O_WRONLY));
+    fdassign(t, 0, tux->fstdin);
+    fdassign(t, 1, tux->fstdout);
+    fdassign(t, 2, tux->fstderr);
 }

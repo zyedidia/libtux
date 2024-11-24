@@ -46,7 +46,7 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
     if (!procfile(p, prog, size, argc, argv))
         goto err3;
 
-    fdinit(&p->fdtable);
+    fdinit(tux, &p->fdtable);
 
     return p;
 err3:

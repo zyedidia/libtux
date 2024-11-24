@@ -1,7 +1,7 @@
 project(
   'lfi',
   ['c'],
-  default_options: ['warning_level=3', 'buildtype=debugoptimized'],
+  default_options: ['warning_level=3', 'buildtype=debugoptimized', 'c_std=gnu11'],
   meson_version: '>=0.60.3',
 )
 
@@ -19,7 +19,8 @@ c_args_hardened = [
 
 c_args_warnings = [
   '-Wno-unused-parameter',
-  '-Wno-language-extension-token',
+  '-Wno-language-extension-token',          # for asm ("name")
+  '-Wno-gnu-zero-variadic-macro-arguments', # for ##__VA_ARGS__ in print macros
 ]
 
 has_auto_var_init = meson.get_compiler('c').has_argument('-ftrivial-auto-var-init=zero')

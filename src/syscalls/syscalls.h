@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "engine.h"
 #include "print.h"
 #include "tux_pal.h"
 #include "proc.h"

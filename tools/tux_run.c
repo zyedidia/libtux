@@ -99,7 +99,9 @@ main(int argc, char** argv)
     }
 
     uint64_t code = tux_proc_start(tux, p);
-    printf("exited with code: %ld\n", code);
+
+    if (args.verbose)
+        fprintf(stderr, "[tux-run] exited with code: %ld\n", code);
 
     return 0;
 }
