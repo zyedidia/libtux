@@ -168,7 +168,7 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
     if (interp != NULL)
         entry = info.ldentry;
 
-    struct TuxRegs regs;
+    struct TuxRegs regs = (struct TuxRegs) {0};
     regs_init(&regs, entry, sp);
     *pal_ctx_regs(p->p_ctx) = regs;
 
