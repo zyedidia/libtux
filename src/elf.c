@@ -80,6 +80,7 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
     }
 
     if (!elfcheck(&ehdr)) {
+        WARN("elfcheck failed");
         return false;
     }
 

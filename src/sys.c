@@ -1,6 +1,7 @@
 #include <assert.h>
 
 #include "sys.h"
+#include "syscalls/strace.h"
 #include "arch_sys.h"
 
 #define SYS(SYSNO, expr)  \
@@ -48,7 +49,7 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(lgetxattr,       -TUX_ENOSYS)
     SYS(socket,          -TUX_ENOSYS)
     default:
-        fprintf(stderr, "unknown syscall: %ld\n", sysno);
+        fprintf(stderr, "unknown syscall: %ld (%s)\n", sysno, sysname(sysno));
         assert(!"unhandled syscall");
     }
 
