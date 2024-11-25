@@ -182,3 +182,28 @@ sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t stat
         return -TUX_EACCES;
     return f->stat_(f->dev, p, stat);
 }
+
+ssize_t
+sys_getdents64(struct TuxProc* p, int fd, asuserptr_t dirp, size_t count)
+{
+    struct FDFile* f = fdget(&p->fdtable, fd);
+    if (!f)
+        return -TUX_EBADF;
+    if (!f->getdents)
+        return -TUX_EPERM;
+    uint8_t* buf = procbuf(p, dirp, count);
+    if (!buf)
+        return -TUX_EFAULT;
+    return f->getdents(f->dev, p, buf, count);
+}
+
+off_t
+sys_lseek(struct TuxProc* p, int fd, off_t offset, int whence)
+{
+    struct FDFile* f = fdget(&p->fdtable, fd);
+    if (!f)
+        return -TUX_EBADF;
+    if (!f->lseek)
+        return -TUX_EPERM;
+    return f->lseek(f->dev, p, offset, whence);
+}

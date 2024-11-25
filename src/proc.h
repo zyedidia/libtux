@@ -7,7 +7,7 @@
 #include "tux.h"
 #include "tux_pal.h"
 
-#include "arch_types.h"
+#include "types.h"
 
 enum {
     TUX_PATH_MAX   = 4096,

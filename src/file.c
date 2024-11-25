@@ -1,7 +1,11 @@
+// For getdents64
+#define _GNU_SOURCE
+
 #include <assert.h>
 #include <stdlib.h>
 #include <fcntl.h>
 
+#include <dirent.h>
 #include <sys/stat.h>
 
 #include "print.h"
@@ -13,6 +17,10 @@
 static char*
 fopenflags(int flags)
 {
+    if ((flags & TUX_O_DIRECTORY) != 0)
+        flags &= ~TUX_O_DIRECTORY;
+    if ((flags & TUX_O_NONBLOCK) != 0)
+        flags &= ~TUX_O_NONBLOCK;
     switch (flags) {
     case TUX_O_RDONLY:
         return "r";
@@ -34,22 +42,13 @@ fopenflags(int flags)
 static int
 openflags(int flags)
 {
-    switch (flags) {
-    case TUX_O_RDONLY:
-        return O_RDONLY;
-    case TUX_O_WRONLY | TUX_O_CREAT | TUX_O_TRUNC:
-        return O_WRONLY | O_CREAT | O_TRUNC;
-    case TUX_O_WRONLY | TUX_O_CREAT | TUX_O_APPEND:
-        return O_WRONLY | O_CREAT | O_APPEND;
-    case TUX_O_RDWR:
-        return O_RDWR;
-    case TUX_O_RDWR | TUX_O_CREAT | TUX_O_TRUNC:
-        return O_RDWR | O_CREAT | O_TRUNC;
-    case TUX_O_RDWR | TUX_O_CREAT | TUX_O_APPEND:
-        return O_RDWR | O_CREAT | O_APPEND;
-    }
-    WARN("invalid open flags: %x", flags);
-    return -1;
+    return ((flags & TUX_O_RDONLY) ? O_RDONLY : 0) |
+        ((flags & TUX_O_WRONLY) ? O_WRONLY : 0) |
+        ((flags & TUX_O_RDWR) ? O_RDWR : 0) |
+        ((flags & TUX_O_CREAT) ? O_CREAT : 0) |
+        ((flags & TUX_O_APPEND) ? O_APPEND : 0) |
+        ((flags & TUX_O_NONBLOCK) ? O_NONBLOCK : 0) |
+        ((flags & TUX_O_DIRECTORY) ? O_DIRECTORY : 0);
 }
 
 struct FDFile*
@@ -126,41 +125,69 @@ fileclose(void* dev, struct TuxProc* p)
 }
 
 int
-filefstatat(const char* dir, const char* path, struct Stat* stat, int flags)
+filefstatat(const char* dir, const char* path, struct Stat* stattux, int flags)
 {
-    assert(!"unimplemented");
+    char buffer[TUX_PATH_MAX];
+    if (!cwk_path_is_absolute(path)) {
+        cwk_path_join(dir, path, buffer, sizeof(buffer));
+        path = buffer;
+    }
+
+    // TODO: handle flags correctly in fstatat
+    struct stat kstat;
+    int err = syserr(stat(path, &kstat));
+    if (err < 0)
+        return err;
+    stattux->st_dev = kstat.st_dev;
+    stattux->st_ino = kstat.st_ino;
+    stattux->st_nlink = kstat.st_nlink;
+    stattux->st_mode = kstat.st_mode;
+    stattux->st_uid = kstat.st_uid;
+    stattux->st_gid = kstat.st_gid;
+    stattux->st_rdev = kstat.st_rdev;
+    stattux->st_size = kstat.st_size;
+    stattux->st_blksize = kstat.st_blksize;
+    stattux->st_blocks = kstat.st_blocks;
+    stattux->st_atim.sec  = kstat.st_atim.tv_sec;
+    stattux->st_atim.nsec = kstat.st_atim.tv_nsec;
+    stattux->st_mtim.sec  = kstat.st_mtim.tv_sec;
+    stattux->st_mtim.nsec = kstat.st_mtim.tv_nsec;
+    stattux->st_ctim.sec  = kstat.st_ctim.tv_sec;
+    stattux->st_ctim.nsec = kstat.st_ctim.tv_nsec;
+    return 0;
 }
 
 static int
-filestat(void* dev, struct TuxProc* p, struct Stat* statbuf)
+filestat(void* dev, struct TuxProc* p, struct Stat* stattux)
 {
     struct stat stat;
     int err = syserr(fstat(fileno(filef(dev)), &stat));
     if (err < 0)
         return err;
-    statbuf->st_dev = stat.st_dev;
-    statbuf->st_ino = stat.st_ino;
-    statbuf->st_nlink = stat.st_nlink;
-    statbuf->st_mode = stat.st_mode;
-    statbuf->st_uid = stat.st_uid;
-    statbuf->st_gid = stat.st_gid;
-    statbuf->st_rdev = stat.st_rdev;
-    statbuf->st_size = stat.st_size;
-    statbuf->st_blksize = stat.st_blksize;
-    statbuf->st_blocks = stat.st_blocks;
-    statbuf->st_atim.sec  = stat.st_atim.tv_sec;
-    statbuf->st_atim.nsec = stat.st_atim.tv_nsec;
-    statbuf->st_mtim.sec  = stat.st_mtim.tv_sec;
-    statbuf->st_mtim.nsec = stat.st_mtim.tv_nsec;
-    statbuf->st_ctim.sec  = stat.st_ctim.tv_sec;
-    statbuf->st_ctim.nsec = stat.st_ctim.tv_nsec;
+    stattux->st_dev = stat.st_dev;
+    stattux->st_ino = stat.st_ino;
+    stattux->st_nlink = stat.st_nlink;
+    stattux->st_mode = stat.st_mode;
+    stattux->st_uid = stat.st_uid;
+    stattux->st_gid = stat.st_gid;
+    stattux->st_rdev = stat.st_rdev;
+    stattux->st_size = stat.st_size;
+    stattux->st_blksize = stat.st_blksize;
+    stattux->st_blocks = stat.st_blocks;
+    stattux->st_atim.sec  = stat.st_atim.tv_sec;
+    stattux->st_atim.nsec = stat.st_atim.tv_nsec;
+    stattux->st_mtim.sec  = stat.st_mtim.tv_sec;
+    stattux->st_mtim.nsec = stat.st_mtim.tv_nsec;
+    stattux->st_ctim.sec  = stat.st_ctim.tv_sec;
+    stattux->st_ctim.nsec = stat.st_ctim.tv_nsec;
     return 0;
 }
 
 static ssize_t
 filegetdents(void* dev, struct TuxProc* p, void* dirp, size_t count)
 {
-    assert(!"unimplemented");
+    // TODO: not portable or secure, refactor into readdir
+    return syserr(getdents64(fileno(filef(dev)), dirp, count));
 }
 
 static int

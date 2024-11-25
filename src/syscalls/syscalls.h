@@ -40,13 +40,15 @@ enum {
 };
 
 enum {
-    TUX_O_RDONLY  = 0x0,
-    TUX_O_WRONLY  = 0x1,
-    TUX_O_RDWR    = 0x2,
-    TUX_O_CREAT   = 0x40,
-    TUX_O_TRUNC   = 0x200,
-    TUX_O_APPEND  = 0x400,
-    TUX_O_CLOEXEC = 0x80000,
+    TUX_O_RDONLY    = 0x0,
+    TUX_O_WRONLY    = 0x1,
+    TUX_O_RDWR      = 0x2,
+    TUX_O_CREAT     = 0x40,
+    TUX_O_TRUNC     = 0x200,
+    TUX_O_APPEND    = 0x400,
+    TUX_O_NONBLOCK  = 0x800,
+    TUX_O_DIRECTORY = 0x10000,
+    TUX_O_CLOEXEC   = 0x80000,
 };
 
 enum {
@@ -124,7 +126,7 @@ syserr(int val)
 
 ssize_t sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size);
 
-void sys_exit(struct TuxProc* p, int val);
+uintptr_t sys_exit(struct TuxProc* p, int val);
 
 uintptr_t sys_brk(struct TuxProc* p, asuserptr_t addr);
 
@@ -140,7 +142,7 @@ typedef int tux_clockid_t;
 
 int sys_clock_gettime(struct TuxProc* p, tux_clockid_t clockid, asuserptr_t tp);
 
-void sys_exit_group(struct TuxProc* p, int code);
+uintptr_t sys_exit_group(struct TuxProc* p, int code);
 
 int sys_ioctl(struct TuxProc* p, int fd, unsigned long request, uintptr_t va0,
         uintptr_t va1, uintptr_t va2, uintptr_t va3);
@@ -165,3 +167,7 @@ ssize_t sys_readv(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt);
 ssize_t sys_pread64(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size, ssize_t offset);
 
 int sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t statbufp, int flags);
+
+ssize_t sys_getdents64(struct TuxProc* p, int fd, asuserptr_t dirp, size_t count);
+
+off_t sys_lseek(struct TuxProc* p, int fd, off_t offset, int whence);
