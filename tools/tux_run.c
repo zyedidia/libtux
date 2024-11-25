@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <argp.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
@@ -19,10 +20,15 @@ enum {
     INPUTMAX = 256,
 };
 
+enum {
+    ARG_strace   = 0x80,
+    ARG_pagesize = 0x81,
+};
+
 struct Args {
     char* inputs[INPUTMAX];
     size_t ninputs;
-    bool verbose;
+    struct TuxOptions opts;
 };
 
 static char doc[] = "tux-run: libtux runner";
@@ -32,6 +38,8 @@ static char args_doc[] = "INPUT...";
 static struct argp_option options[] = {
     { "help",           'h',               0,      0, "show this message", -1 },
     { "verbose",        'V',               0,      0, "show verbose output", -1 },
+    { "strace",         ARG_strace,        0,      0, "show system call trace", -1 },
+    { "pagesize",       ARG_pagesize,      "SIZE", 0, "system page size", -1 },
     { 0 },
 };
 
@@ -45,7 +53,13 @@ parse_opt(int key, char* arg, struct argp_state* state)
         argp_state_help(state, state->out_stream, ARGP_HELP_STD_HELP);
         break;
     case 'V':
-        args->verbose = true;
+        args->opts.verbose = true;
+        break;
+    case ARG_strace:
+        args->opts.strace = true;
+        break;
+    case ARG_pagesize:
+        args->opts.pagesize = atoi(arg);
         break;
     case ARGP_KEY_ARG:
         if (args->ninputs < INPUTMAX)
@@ -78,13 +92,19 @@ main(int argc, char** argv)
         return 1;
     }
 
-    struct Platform* plat = sud_new_plat();
+    size_t pagesize = getpagesize();
+    if (args.opts.pagesize == 0)
+        args.opts.pagesize = pagesize;
+    if (args.opts.pagesize % pagesize != 0) {
+        fprintf(stderr, "invalid pagesize %ld (host pagesize %ld)\n", args.opts.pagesize, pagesize);
+        return 1;
+    }
 
-    struct Tux* tux = tux_new(plat, (struct TuxOptions) {
-        .pagesize = getpagesize(),
-        .stacksize = mb(2),
-        .verbose = args.verbose,
-    });
+    struct Platform* plat = sud_new_plat(args.opts.pagesize);
+
+    args.opts.stacksize = mb(2);
+
+    struct Tux* tux = tux_new(plat, args.opts);
 
     buf_t f = bufreadfile(args.inputs[0]);
     if (!f.data) {
@@ -100,7 +120,7 @@ main(int argc, char** argv)
 
     uint64_t code = tux_proc_start(tux, p);
 
-    if (args.verbose)
+    if (args.opts.verbose)
         fprintf(stderr, "[tux-run] exited with code: %ld\n", code);
 
     return 0;

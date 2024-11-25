@@ -7,10 +7,10 @@
 #include "platform.h"
 
 struct Platform*
-sud_new_plat(void)
+sud_new_plat(size_t pagesize)
 {
     struct PlatOptions opts = (struct PlatOptions) {
-        .pagesize = getpagesize(),
+        .pagesize = pagesize,
         .vmsize = gb(4),
     };
     struct Platform* plat = malloc(sizeof(struct Platform));

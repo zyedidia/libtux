@@ -3,6 +3,7 @@
 
 #include "tux_pal.h"
 #include "sys.h"
+#include "syscalls/strace.h"
 #include "syscalls/syscalls.h"
 
 #include "arch_sys.h"
@@ -23,11 +24,24 @@ sys_arch_prctl(struct TuxProc* p, int code, asuserptr_t addr)
     }
 }
 
+static const char*
+arch_sysname(uint64_t sysno)
+{
+    switch (sysno) {
+    STRACE_CASE(arch_prctl)
+    STRACE_CASE(readlink)
+    STRACE_CASE(access)
+    }
+    return NULL;
+}
+
 void
 arch_syshandle(struct PlatContext* ctx)
 {
     struct TuxProc* proc = (struct TuxProc*) pal_ctx_data(ctx);
     struct TuxRegs* regs = pal_ctx_regs(ctx);
+
+    uint64_t orig_rax = regs->rax;
 
     switch (regs->rax) {
     case TUX_SYS_arch_prctl:
@@ -43,5 +57,12 @@ arch_syshandle(struct PlatContext* ctx)
         // Generic syscalls.
         regs->rax = syshandle(proc, regs->rax, regs->rdi, regs->rsi, regs->rdx,
                 regs->r10, regs->r8, regs->r9);
+    }
+
+    if (proc->tux->opts.strace) {
+        const char* name = arch_sysname(orig_rax);
+        if (!name)
+            name = sysname(orig_rax);
+        fprintf(stderr, "strace: %s = %lx\n", name, regs->rax);
     }
 }

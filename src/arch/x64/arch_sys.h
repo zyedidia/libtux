@@ -39,6 +39,9 @@ enum {
     TUX_SYS_getrandom          = 318,
     TUX_SYS_statx              = 332,
     TUX_SYS_rseq               = 334,
+
+    // always last syscall+1
+    TUX_SYS_ntotal             = 335,
 };
 
 void arch_syshandle(struct PlatContext* ctx);

@@ -3,14 +3,9 @@
 #include "sys.h"
 #include "arch_sys.h"
 
-#define NOSYS(SYSNO) \
+#define SYS(SYSNO, expr)  \
     case TUX_SYS_##SYSNO: \
-        r = -TUX_ENOSYS; \
-        break;
-
-#define SYS(SYSNO, expr) \
-    case TUX_SYS_##SYSNO: \
-        r = expr; \
+        r = expr;         \
         break;
 
 uintptr_t
@@ -43,16 +38,15 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(set_tid_address, 0)
     SYS(set_robust_list, 0)
     SYS(uname,           sys_uname(proc, a0))
-
-    NOSYS(statx)
-    NOSYS(rseq)
-    NOSYS(prlimit64)
-    NOSYS(statfs)
-    NOSYS(poll)
-    NOSYS(rt_sigprocmask)
-    NOSYS(getxattr)
-    NOSYS(lgetxattr)
-    NOSYS(socket)
+    SYS(statx,           -TUX_ENOSYS)
+    SYS(rseq,            -TUX_ENOSYS)
+    SYS(prlimit64,       -TUX_ENOSYS)
+    SYS(statfs,          -TUX_ENOSYS)
+    SYS(poll,            -TUX_ENOSYS)
+    SYS(rt_sigprocmask,  -TUX_ENOSYS)
+    SYS(getxattr,        -TUX_ENOSYS)
+    SYS(lgetxattr,       -TUX_ENOSYS)
+    SYS(socket,          -TUX_ENOSYS)
     default:
         fprintf(stderr, "unknown syscall: %ld\n", sysno);
         assert(!"unhandled syscall");

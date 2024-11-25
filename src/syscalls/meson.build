@@ -6,4 +6,5 @@ srcs += files(
   'sys_mem.c',
   'sys_proc.c',
   'sys_random.c',
+  'strace.c',
 )

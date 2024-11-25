@@ -8,6 +8,7 @@ struct TuxOptions {
     size_t pagesize;
     size_t stacksize;
     bool verbose;
+    bool strace;
 };
 
 struct Platform;
