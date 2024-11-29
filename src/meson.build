@@ -10,6 +10,7 @@ srcs = files(
 
 subdir('syscalls')
 subdir('arch/' + cpuarch)
+subdir('host')
 
 cwalk = subproject('cwalk')
 

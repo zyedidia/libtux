@@ -1,1 +1,1 @@
-subdir('sud')
+subdir(pal)

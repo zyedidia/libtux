@@ -59,6 +59,18 @@ cpuarch = archmap[cpu]
 
 argp = subproject('libargp').get_variable('argp_dep')
 
+host = get_option('host')
+if host == 'auto'
+  # TODO: autodetect current platform
+  host = 'linux'
+endif
+
+pal = get_option('pal')
+if pal == 'auto'
+  # TODO: pick a valid isolation layer based on the chosen host
+  pal = 'sud'
+endif
+
 subdir('src')
 subdir('pal')
 subdir('tools')

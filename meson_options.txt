@@ -1,0 +1,2 @@
+option('host', type: 'string', value: 'auto', description: 'host platform')
+option('pal', type: 'string', value: 'auto', description: 'isolation layer')

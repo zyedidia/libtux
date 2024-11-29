@@ -25,7 +25,7 @@ struct Stat {
     tux_mode_t st_mode;
     tux_uid_t st_uid;
     tux_gid_t st_gid;
-    uint32_t __pad0;
+    uint32_t _pad0;
     tux_dev_t st_rdev;
     tux_off_t st_size;
     tux_blksize_t st_blksize;
@@ -34,5 +34,5 @@ struct Stat {
     struct TimeSpec st_atim;
     struct TimeSpec st_mtim;
     struct TimeSpec st_ctim;
-    uint64_t __unused[3];
+    uint64_t _unused[3];
 };

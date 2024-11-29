@@ -56,6 +56,11 @@ enum {
     TUX_AT_EMPTY_PATH = 0x1000,
 };
 
+enum {
+    TUX_GRND_NONBLOCK = 1,
+    TUX_GRND_RANDOM   = 2,
+};
+
 static inline asptr_t
 procaddr(struct TuxProc* p, asuserptr_t addr)
 {
