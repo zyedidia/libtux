@@ -8,45 +8,6 @@
 #include "tux_pal.h"
 #include "proc.h"
 
-enum {
-    TUX_EPERM  = 1,
-    TUX_ENOENT = 2,
-    TUX_EBADF  = 9,
-    TUX_EACCES = 13,
-    TUX_EFAULT = 14,
-    TUX_EINVAL = 22,
-    TUX_EMFILE = 24,
-    TUX_ENOSYS = 38,
-};
-
-enum {
-    TUX_SEEK_SET  = 0,
-    TUX_SEEK_CUR  = 1,
-    TUX_SEEK_END  = 2,
-};
-
-enum {
-    TUX_O_RDONLY    = 0x0,
-    TUX_O_WRONLY    = 0x1,
-    TUX_O_RDWR      = 0x2,
-    TUX_O_CREAT     = 0x40,
-    TUX_O_TRUNC     = 0x200,
-    TUX_O_APPEND    = 0x400,
-    TUX_O_NONBLOCK  = 0x800,
-    TUX_O_DIRECTORY = 0x10000,
-    TUX_O_CLOEXEC   = 0x80000,
-};
-
-enum {
-    TUX_AT_FDCWD      = -100,
-    TUX_AT_EMPTY_PATH = 0x1000,
-};
-
-enum {
-    TUX_GRND_NONBLOCK = 1,
-    TUX_GRND_RANDOM   = 2,
-};
-
 static inline asptr_t
 procaddr(struct TuxProc* p, asuserptr_t addr)
 {
@@ -147,3 +108,7 @@ int sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t 
 ssize_t sys_getdents64(struct TuxProc* p, int fd, asuserptr_t dirp, size_t count);
 
 off_t sys_lseek(struct TuxProc* p, int fd, off_t offset, int whence);
+
+long sys_futex(struct TuxProc* p, asuserptr_t uaddrp, int op, uint32_t val, uint64_t timeoutp, asuserptr_t uaddr2p, uint32_t val3);
+
+int sys_clone(struct TuxProc* p, uint64_t flags, uint64_t stack, uint64_t ptid, uint64_t ctid, uint64_t tls, uint64_t func);
