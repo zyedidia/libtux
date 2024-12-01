@@ -1,5 +1,6 @@
 #include <stdlib.h>
 
+#include "host.h"
 #include "tux.h"
 #include "tux_pal.h"
 #include "proc.h"
@@ -19,13 +20,13 @@ tux_new(struct Platform* plat, struct TuxOptions opts)
         .opts = opts,
     };
 
-    tux->fstdin = filefnew(stdin, TUX_O_RDONLY);
+    tux->fstdin = filefnew(host_stdin(), TUX_O_RDONLY);
     if (!tux->fstdin)
         goto err1;
-    tux->fstdout = filefnew(stdout, TUX_O_WRONLY);
+    tux->fstdout = filefnew(host_stdout(), TUX_O_WRONLY);
     if (!tux->fstdout)
         goto err2;
-    tux->fstderr = filefnew(stderr, TUX_O_WRONLY);
+    tux->fstderr = filefnew(host_stderr(), TUX_O_WRONLY);
     if (!tux->fstderr)
         goto err3;
     // Bump reference counts to represent libtux's references.
@@ -36,9 +37,9 @@ tux_new(struct Platform* plat, struct TuxOptions opts)
     pal_sys_handler(plat, &arch_syshandle);
     return tux;
 err3:
-    filefree(tux->fstdout);
+    free(tux->fstdout);
 err2:
-    filefree(tux->fstdin);
+    free(tux->fstdin);
 err1:
     free(tux);
     return NULL;

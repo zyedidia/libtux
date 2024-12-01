@@ -191,7 +191,7 @@ sys_getdents64(struct TuxProc* p, int fd, asuserptr_t dirp, size_t count)
         return -TUX_EBADF;
     if (!f->getdents)
         return -TUX_EPERM;
-    uint8_t* buf = procbuf(p, dirp, count);
+    uint8_t* buf = procbufalign(p, dirp, count, alignof(struct Dirent));
     if (!buf)
         return -TUX_EFAULT;
     return f->getdents(f->dev, p, buf, count);

@@ -7,20 +7,36 @@
 
 struct HostFile;
 
-struct HostFile* host_open(const char* filename, const char* mode);
+struct Stat;
 
-size_t host_read(struct HostFile* file, uint8_t* buffer, size_t size);
+struct HostFile* host_open(const char* filename, int flags, int mode);
 
-size_t host_write(struct HostFile* file, uint8_t* buffer, size_t size);
+ssize_t host_read(struct HostFile* file, uint8_t* buffer, size_t size);
+
+ssize_t host_write(struct HostFile* file, uint8_t* buffer, size_t size);
 
 ssize_t host_seek(struct HostFile* file, size_t loc, int whence);
 
-// host_stat
+int host_fstat(struct HostFile* file, struct Stat* stat);
 
-// host_getdents64
+ssize_t host_getdents64(struct HostFile* file, void* dirp, size_t count);
 
 // host_readlink
 
-void host_close(struct HostFile* file);
+int host_close(struct HostFile* file);
+
+int host_stat(const char* path, struct Stat* stat);
+
+struct HostFile* host_stdin(void);
+
+struct HostFile* host_stdout(void);
+
+struct HostFile* host_stderr(void);
 
 ssize_t host_getrandom(void* buf, size_t size, unsigned int flags);
+
+void* host_mmap(void* addr, size_t length, int prot, int flags, struct HostFile* file, off_t offset);
+
+int host_munmap(void* addr, size_t length);
+
+int host_mprotect(void* addr, size_t length, int prot);

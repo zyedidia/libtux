@@ -27,7 +27,8 @@ struct FDFile {
     int     (*close)(void*, struct TuxProc*);
     int     (*stat_)(void*, struct TuxProc*, struct Stat*);
     ssize_t (*getdents)(void*, struct TuxProc*, void*, size_t);
-    int     (*mapfd)(void*);
+
+    struct HostFile* (*mapfile)(void*);
 };
 
 struct FDTable {

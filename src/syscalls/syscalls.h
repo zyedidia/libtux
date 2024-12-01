@@ -20,20 +20,6 @@ enum {
 };
 
 enum {
-    TUX_MAP_PRIVATE   = 2,
-    TUX_MAP_FIXED     = 16,
-    TUX_MAP_ANONYMOUS = 32,
-    TUX_MAP_DENYWRITE = 2048,
-    TUX_MAP_NORESERVE = 16384,
-};
-
-enum {
-    TUX_PROT_READ  = 1,
-    TUX_PROT_WRITE = 2,
-    TUX_PROT_EXEC  = 4,
-};
-
-enum {
     TUX_SEEK_SET  = 0,
     TUX_SEEK_CUR  = 1,
     TUX_SEEK_END  = 2,
@@ -104,21 +90,6 @@ procpath(struct TuxProc* p, asuserptr_t pathp)
     if (str[len] != 0)
         return NULL;
     return str;
-}
-
-static inline int
-palprot(int prot)
-{
-    return ((prot & TUX_PROT_READ) ? PAL_PROT_READ : 0) |
-        ((prot & TUX_PROT_WRITE) ? PAL_PROT_WRITE : 0) |
-        ((prot & TUX_PROT_EXEC) ? PAL_PROT_EXEC : 0);
-}
-
-static inline int
-palflags(int flags)
-{
-    return ((flags & TUX_MAP_ANONYMOUS) ? PAL_MAP_ANONYMOUS : 0) |
-        ((flags & TUX_MAP_PRIVATE) ? PAL_MAP_PRIVATE : 0);
 }
 
 static inline int

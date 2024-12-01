@@ -49,40 +49,21 @@ pal_as_info(struct PlatAddrSpace* as)
 }
 
 static int
-mmapprot(int prot)
+asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot, int flags, struct HostFile* hf, off_t off)
 {
-    return ((prot & PAL_PROT_READ) ? PROT_READ : 0) |
-        ((prot & PAL_PROT_WRITE) ? PROT_WRITE : 0) |
-        ((prot & PAL_PROT_EXEC) ? PROT_EXEC : 0);
-}
-
-static int
-mmapflags(int flags)
-{
-    return ((flags & PAL_MAP_ANONYMOUS) ? MAP_ANONYMOUS : 0) |
-        ((flags & PAL_MAP_PRIVATE) ? MAP_PRIVATE : 0) |
-        ((flags & PAL_MAP_SHARED) ? MAP_SHARED : 0);
-}
-
-static int
-asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot, int flags, int fd, off_t off)
-{
-    void* mem = mmap((void*) start, size, prot, flags | MAP_FIXED, fd, off);
+    void* mem = host_mmap((void*) start, size, prot, flags | MAP_FIXED, hf, off);
     if (mem == (void*) -1)
         return -errno;
     return 0;
 }
 
 asptr_t
-pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, int fd, off_t off)
+pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, struct HostFile* hf, off_t off)
 {
-    prot = mmapprot(prot);
-    flags = mmapflags(flags);
-
-    asptr_t addr = mm_mapany(&as->mm, size, prot, flags, fd, off);
+    asptr_t addr = mm_mapany(&as->mm, size, prot, flags, hf, off);
     if (addr == (asptr_t) -1)
         return 0;
-    int r = asmap(as, addr, size, prot, flags, fd, off);
+    int r = asmap(as, addr, size, prot, flags, hf, off);
     if (r < 0) {
         mm_unmap(&as->mm, addr, size);
         return (asptr_t) -1;
@@ -94,22 +75,19 @@ static void
 cbunmap(uintptr_t start, size_t len, MMInfo info, void* udata)
 {
     (void) udata, (void) info;
-    void* p = mmap((void*) start, len, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0);
+    void* p = host_mmap((void*) start, len, TUX_PROT_NONE, TUX_MAP_ANONYMOUS | TUX_MAP_PRIVATE | TUX_MAP_FIXED, NULL, 0);
     assert(p == (void*) start);
 }
 
 asptr_t
-pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, int fd, off_t off)
+pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, struct HostFile* hf, off_t off)
 {
     assert(addr >= as->minaddr && addr + size <= as->maxaddr);
-    // Convert platform-independent mmap flags/prot into Linux ones.
-    prot = mmapprot(prot);
-    flags = mmapflags(flags);
 
-    addr = (asptr_t) mm_mapat_cb(&as->mm, addr, size, prot, flags, fd, off, cbunmap, NULL);
+    addr = (asptr_t) mm_mapat_cb(&as->mm, addr, size, prot, flags, hf, off, cbunmap, NULL);
     if (addr == (asptr_t) -1)
         return (asptr_t) -1; 
-    int r = asmap(as, addr, size, prot, flags, fd, off);
+    int r = asmap(as, addr, size, prot, flags, hf, off);
     if (r < 0) {
         mm_unmap(&as->mm, addr, size);
         return (asptr_t) -1;
@@ -122,8 +100,9 @@ pal_as_mprotect(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot)
 {
     assert(addr >= as->minaddr && addr + size <= as->maxaddr);
 
-    prot = mmapprot(prot);
-    return mprotect((void*) addr, size, prot);
+    // TODO: mark the mapping with libmmap?
+
+    return host_mprotect((void*) addr, size, prot);
 }
 
 int

@@ -20,16 +20,16 @@ sys_brk(struct TuxProc* p, asuserptr_t addr)
     if (newsize == p->brksize)
         return procuseraddr(p, brkp);
 
-    const int mapflags = PAL_MAP_PRIVATE | PAL_MAP_ANONYMOUS;
-    const int mapprot = PAL_PROT_READ | PAL_PROT_WRITE;
+    const int mapflags = TUX_MAP_PRIVATE | TUX_MAP_ANONYMOUS;
+    const int mapprot = TUX_PROT_READ | TUX_PROT_WRITE;
 
     if (brkp >= p->brkbase + p->brksize) {
         asptr_t map;
         if (p->brksize == 0) {
-            map = pal_as_mapat(p->p_as, p->brkbase, newsize, mapprot, mapflags, -1, 0);
+            map = pal_as_mapat(p->p_as, p->brkbase, newsize, mapprot, mapflags, NULL, 0);
         } else {
             asptr_t next = ceilp(p->brkbase + p->brksize, p->tux->opts.pagesize);
-            map = pal_as_mapat(p->p_as, next, newsize - p->brksize, mapprot, mapflags, -1, 0);
+            map = pal_as_mapat(p->p_as, next, newsize - p->brksize, mapprot, mapflags, NULL, 0);
         }
         if (map == (asptr_t) -1)
             return -1;
@@ -79,7 +79,7 @@ int
 sys_mprotect(struct TuxProc* p, asuserptr_t addrup, size_t length, int prot)
 {
     asptr_t addrp = procaddr(p, addrup);
-    return pal_as_mprotect(p->p_as, addrp, length, palprot(prot));
+    return pal_as_mprotect(p->p_as, addrp, length, prot);
 }
 
 int

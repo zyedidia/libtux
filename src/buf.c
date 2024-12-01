@@ -1,30 +1,28 @@
-#include <stdio.h>
-#include <sys/mman.h>
-
+#include "syscalls/syscalls.h"
+#include "host.h"
 #include "buf.h"
 
-// TODO: make this function portable
 buf_t
 bufreadfile(const char* filename)
 {
-    FILE* f = fopen(filename, "rb");
+    struct HostFile* f = host_open(filename, TUX_O_RDONLY, 0);
     if (!f)
-        return (buf_t){NULL, 0};
-    if (fseek(f, 0, SEEK_END) < 0)
+        return (buf_t) {NULL, 0};
+    ssize_t size = host_seek(f, 0, TUX_SEEK_END);
+    if (size < 0)
         goto err;
 
-    size_t size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    void* p = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fileno(f), 0);
+    host_seek(f, 0, TUX_SEEK_SET);
+    void* p = host_mmap(NULL, size, TUX_PROT_READ, TUX_MAP_PRIVATE, f, 0);
     if (p == (void*) -1)
         goto err;
 
-    fclose(f);
+    host_close(f);
     return (buf_t) {
         .data = (uint8_t*) p,
         .size = size,
     };
 err:
-    fclose(f);
+    host_close(f);
     return (buf_t){NULL, 0};
 }

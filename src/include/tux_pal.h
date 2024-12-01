@@ -3,17 +3,23 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include "tux_host.h"
 #include "tux_arch.h"
 
 enum {
-    PAL_MAP_PRIVATE   = (1 << 0),
-    PAL_MAP_ANONYMOUS = (1 << 1),
-    PAL_MAP_SHARED = (1 << 2),
+    TUX_MAP_SHARED    = 1,
+    TUX_MAP_PRIVATE   = 2,
+    TUX_MAP_FIXED     = 16,
+    TUX_MAP_ANONYMOUS = 32,
+    TUX_MAP_DENYWRITE = 2048,
+    TUX_MAP_NORESERVE = 16384,
+};
 
-    PAL_PROT_NONE     = 0,
-    PAL_PROT_READ     = (1 << 0),
-    PAL_PROT_WRITE    = (1 << 1),
-    PAL_PROT_EXEC     = (1 << 2),
+enum {
+    TUX_PROT_NONE  = 0,
+    TUX_PROT_READ  = 1,
+    TUX_PROT_WRITE = 2,
+    TUX_PROT_EXEC  = 4,
 };
 
 struct PlatAddrSpace;
@@ -39,8 +45,8 @@ struct PlatAddrSpace*   pal_as_new(struct Platform* plat);
 struct TuxAddrSpaceInfo pal_as_info(struct PlatAddrSpace* as);
 struct PlatContext*     pal_ctx_new(struct Platform* plat, void* ctxp);
 
-asptr_t                 pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, int fd, off_t off);
-asptr_t                 pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, int fd, off_t off);
+asptr_t                 pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, struct HostFile* f, off_t off);
+asptr_t                 pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, struct HostFile* f, off_t off);
 int                     pal_as_munmap(struct PlatAddrSpace* as, asptr_t addr, size_t size);
 int                     pal_as_mprotect(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot);
 void                    pal_as_copyfrom(struct PlatAddrSpace* as, void* dst, asuserptr_t src, size_t size);

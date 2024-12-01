@@ -176,8 +176,8 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
     p->brksize = 0;
 
     // Reserve the brk region.
-    const int mapflags = PAL_MAP_PRIVATE | PAL_MAP_ANONYMOUS;
-    asptr_t brkregion = pal_as_mapat(p->p_as, p->brkbase, TUX_BRKMAXSIZE, PAL_PROT_NONE, mapflags, -1, 0);
+    const int mapflags = TUX_MAP_PRIVATE | TUX_MAP_ANONYMOUS;
+    asptr_t brkregion = pal_as_mapat(p->p_as, p->brkbase, TUX_BRKMAXSIZE, TUX_PROT_NONE, mapflags, NULL, 0);
     if (brkregion == (asptr_t) -1)
         return false;
 
@@ -188,16 +188,16 @@ int
 procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd,
         off_t offset, asptr_t* o_mapstart)
 {
-    int kfd = -1;
+    struct HostFile* hf = NULL;
     if (fd >= 0) {
         struct FDFile* f = fdget(&p->fdtable, fd);
         if (!f)
             return -TUX_EBADF;
-        if (!f->mapfd)
+        if (!f->mapfile)
             return -TUX_EACCES;
-        kfd = f->mapfd(f->dev);
+        hf = f->mapfile(f->dev);
     }
-    asptr_t addr = pal_as_mapany(p->p_as, size, palprot(prot), palflags(flags), kfd, offset);
+    asptr_t addr = pal_as_mapany(p->p_as, size, prot, flags, hf, offset);
     if (addr == (asptr_t) -1)
         return -TUX_EINVAL;
     *o_mapstart = (uintptr_t) addr;
@@ -208,16 +208,16 @@ int
 procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags,
         int fd, off_t offset)
 {
-    int kfd = -1;
+    struct HostFile* hf = NULL;
     if (fd >= 0) {
         struct FDFile* f = fdget(&p->fdtable, fd);
         if (!f)
             return -TUX_EBADF;
-        if (!f->mapfd)
+        if (!f->mapfile)
             return -TUX_EACCES;
-        kfd = f->mapfd(f->dev);
+        hf = f->mapfile(f->dev);
     }
-    asptr_t addr = pal_as_mapat(p->p_as, start, size, palprot(prot), palflags(flags), kfd, offset);
+    asptr_t addr = pal_as_mapat(p->p_as, start, size, prot, flags, hf, offset);
     if (addr == (asptr_t) -1)
         return -TUX_EINVAL;
     return 0;
