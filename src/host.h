@@ -40,3 +40,5 @@ void* host_mmap(void* addr, size_t length, int prot, int flags, struct HostFile*
 int host_munmap(void* addr, size_t length);
 
 int host_mprotect(void* addr, size_t length, int prot);
+
+int host_sched_yield(void);
