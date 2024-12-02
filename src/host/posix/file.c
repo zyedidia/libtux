@@ -40,7 +40,7 @@ err:
     return NULL;
 }
 
-size_t
+ssize_t
 host_read(struct HostFile* file, uint8_t* buf, size_t size)
 {
     ssize_t r = read(file->fd, buf, size);
@@ -49,7 +49,7 @@ host_read(struct HostFile* file, uint8_t* buf, size_t size)
     return r;
 }
 
-size_t
+ssize_t
 host_write(struct HostFile* file, uint8_t* buf, size_t size)
 {
     ssize_t r = write(file->fd, buf, size);
