@@ -40,12 +40,13 @@ extern void pal_set_tp(void)
     asm ("pal_set_tp");
 
 static void
-syssetup(struct Sys* sys, uintptr_t base)
+syssetup(struct Sys* sys, struct PlatContext* ctx, uintptr_t base)
 {
     sys->rtcalls[0] = (uintptr_t) &pal_syscall_entry;
     sys->rtcalls[1] = (uintptr_t) &pal_get_tp;
     sys->rtcalls[2] = (uintptr_t) &pal_set_tp;
     sys->base = base;
+    sys->ctx = (uintptr_t) ctx;
 }
 
 struct PlatContext*
@@ -58,7 +59,7 @@ pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp)
     struct Sys* sys = sysalloc(plat, as->base);
     if (!sys)
         assert(!"unimplemented");
-    syssetup(sys, as->base);
+    syssetup(sys, ctx, as->base);
 
     *ctx = (struct PlatContext) {
         .ctxp = ctxp,
