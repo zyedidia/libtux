@@ -58,7 +58,7 @@ pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp)
 
     struct Sys* sys = sysalloc(plat, as->base);
     if (!sys)
-        assert(!"unimplemented");
+        goto err;
     syssetup(sys, ctx, as->base);
 
     *ctx = (struct PlatContext) {
@@ -70,6 +70,9 @@ pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp)
     pal_regs_init(&ctx->regs, as, ctx);
 
     return ctx;
+err:
+    free(ctx);
+    return NULL;
 }
 
 uint64_t
@@ -111,5 +114,5 @@ pal_ctx_exit(struct PlatContext* ctx, uint64_t val)
 void
 pal_ctx_tpset(struct PlatContext* ctx, asptr_t tp)
 {
-    assert(!"unimplemented");
+    ctx->tp = tp;
 }

@@ -121,7 +121,7 @@ main(int argc, char** argv)
     uint64_t code = tux_proc_start(tux, p);
 
     if (args.opts.verbose)
-        fprintf(stderr, "[tux-run] exited with code: %ld\n", code);
+        fprintf(stderr, "[tux-run] exited with code: %ld\n", (long) code);
 
     return 0;
 }

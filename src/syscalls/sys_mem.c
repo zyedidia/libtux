@@ -67,11 +67,11 @@ sys_mmap(struct TuxProc* p, asuserptr_t addrup, size_t length, int prot, int fla
         r = procmapany(p, length, prot, flags, fd, off, &addrp);
     }
     if (r < 0) {
-        VERBOSE(p->tux, "sys_mmap(%lx (%lx), %ld, %d, %d, %d, %ld) = %d", addrp, i_addrp, length, prot, flags, fd, off, r);
+        VERBOSE(p->tux, "sys_mmap(%lx (%lx), %ld, %d, %d, %d, %ld) = %d", addrp, i_addrp, length, prot, flags, fd, (long) off, r);
         return r;
     }
     asuserptr_t ret = procuseraddr(p, addrp);
-    VERBOSE(p->tux, "sys_mmap(%lx (%lx), %ld, %d, %d, %d, %ld) = %lx", addrp, i_addrp, length, prot, flags, fd, off, ret);
+    VERBOSE(p->tux, "sys_mmap(%lx (%lx), %ld, %d, %d, %d, %ld) = %lx", addrp, i_addrp, length, prot, flags, fd, (long) off, ret);
     return ret;
 }
 
