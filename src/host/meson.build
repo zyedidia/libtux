@@ -4,6 +4,7 @@ if host == 'linux'
     'linux/dir.c',
     'posix/file.c',
     'posix/thread.c',
+    'posix/time.c',
   )
 elif host == 'posix'
   srcs += files(
@@ -11,5 +12,6 @@ elif host == 'posix'
     'posix/file.c',
     'posix/dir.c',
     'posix/thread.c',
+    'posix/time.c',
   )
 endif

@@ -5,10 +5,13 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include "cwalk.h"
+
 #include "syscalls/syscalls.h"
 
 #include "file.h"
 #include "fd.h"
+#include "host.h"
 
 ssize_t
 sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size)
@@ -206,4 +209,79 @@ sys_lseek(struct TuxProc* p, int fd, off_t offset, int whence)
     if (!f->lseek)
         return -TUX_EPERM;
     return f->lseek(f->dev, p, offset, whence);
+}
+
+int
+sys_truncate(struct TuxProc* p, uintptr_t pathp, off_t length)
+{
+    const char* path = procpath(p, pathp);
+    if (!path)
+        return -TUX_EFAULT;
+    char buffer[TUX_PATH_MAX];
+    if (!cwk_path_is_absolute(path)) {
+        cwk_path_join(p->cwd.name, path, buffer, sizeof(buffer));
+        path = buffer;
+    }
+    return host_truncate(path, length);
+}
+
+int
+sys_ftruncate(struct TuxProc* p, int fd, off_t length)
+{
+    struct FDFile* f = fdget(&p->fdtable, fd);
+    if (!f)
+        return -TUX_EBADF;
+    if (!f->truncate)
+        return -TUX_EPERM;
+    return f->truncate(f->dev, p, length);
+}
+
+int
+sys_chown(struct TuxProc* p, uintptr_t pathp, tux_uid_t owner, tux_gid_t group)
+{
+    const char* path = procpath(p, pathp);
+    if (!path)
+        return -TUX_EFAULT;
+    char buffer[TUX_PATH_MAX];
+    if (!cwk_path_is_absolute(path)) {
+        cwk_path_join(p->cwd.name, path, buffer, sizeof(buffer));
+        path = buffer;
+    }
+    return host_chown(path, owner, group);
+}
+
+int
+sys_fchown(struct TuxProc* p, int fd, tux_uid_t owner, tux_gid_t group)
+{
+    struct FDFile* f = fdget(&p->fdtable, fd);
+    if (!f)
+        return -TUX_EBADF;
+    if (!f->chown)
+        return -TUX_EPERM;
+    return f->chown(f->dev, p, owner, group);
+}
+
+int
+sys_chmod(struct TuxProc* p, uintptr_t pathp, tux_mode_t mode)
+{
+    const char* path = procpath(p, pathp);
+    if (!path)
+        return -TUX_EFAULT;
+    char buffer[TUX_PATH_MAX];
+    if (!cwk_path_is_absolute(path)) {
+        cwk_path_join(p->cwd.name, path, buffer, sizeof(buffer));
+        path = buffer;
+    }
+    return host_chmod(path, mode);
+}
+
+int
+sys_fchmod(struct TuxProc* p, int fd, tux_mode_t mode)
+{
+    struct FDFile* f = fdget(&p->fdtable, fd);
+    if (!f)
+        return -TUX_EBADF;
+    if (!f->chmod)
+        return -TUX_EPERM;
+    return f->chmod(f->dev, p, mode);
 }

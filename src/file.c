@@ -66,6 +66,24 @@ filelseek(void* dev, struct TuxProc* p, off_t off, int whence)
 }
 
 static int
+filetruncate(void* dev, struct TuxProc* p, off_t length)
+{
+    return host_ftruncate(filef(dev), length);
+}
+
+static int
+filechown(void* dev, struct TuxProc* p, tux_uid_t owner, tux_gid_t group)
+{
+    return host_fchown(filef(dev), owner, group);
+}
+
+static int
+filechmod(void* dev, struct TuxProc* p, tux_mode_t mode)
+{
+    return host_fchmod(filef(dev), mode);
+}
+
+static int
 fileclose(void* dev, struct TuxProc* p)
 {
     int x = host_close(filef(dev));
@@ -128,6 +146,9 @@ filefnew(struct HostFile* kfile, int flags)
         .lseek = filelseek,
         .close = fileclose,
         .stat_ = filestat,
+        .truncate = filetruncate,
+        .chown = filechown,
+        .chmod = filechmod,
         .getdents = filegetdents,
         .mapfile = filemapfile,
     };

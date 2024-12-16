@@ -27,6 +27,9 @@ struct FDFile {
     int     (*close)(void*, struct TuxProc*);
     int     (*stat_)(void*, struct TuxProc*, struct Stat*);
     ssize_t (*getdents)(void*, struct TuxProc*, void*, size_t);
+    int     (*chown)(void*, struct TuxProc*, tux_uid_t, tux_gid_t);
+    int     (*chmod)(void*, struct TuxProc*, tux_mode_t);
+    int     (*truncate)(void*, struct TuxProc*, off_t);
 
     struct HostFile* (*mapfile)(void*);
 };

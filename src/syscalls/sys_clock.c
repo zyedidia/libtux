@@ -2,6 +2,8 @@
 #include <time.h>
 #include <errno.h>
 
+#include "host.h"
+
 #include "syscalls/syscalls.h"
 
 enum {
@@ -31,4 +33,13 @@ sys_clock_gettime(struct TuxProc* p, tux_clockid_t clockid, uintptr_t tp) {
     tux_t->tv_sec = t.tv_sec;
     tux_t->tv_nsec = t.tv_nsec;
     return 0;
+}
+
+tux_time_t
+sys_time(struct TuxProc* p, uintptr_t tlocp)
+{
+    // TODO: currently we require tlocp to be NULL
+    if (tlocp != 0)
+        return -TUX_EINVAL;
+    return host_time();
 }

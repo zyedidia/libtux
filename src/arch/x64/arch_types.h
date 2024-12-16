@@ -2,11 +2,6 @@
 
 #include <stdint.h>
 
-struct TimeSpec {
-    uint64_t sec;
-    uint64_t nsec;
-};
-
 typedef uint64_t tux_dev_t;
 typedef uint64_t tux_ino_t;
 typedef uint64_t tux_nlink_t;
@@ -16,6 +11,11 @@ typedef uint32_t tux_gid_t;
 typedef uint64_t tux_off_t;
 typedef uint64_t tux_blksize_t;
 typedef uint64_t tux_blkcnt_t;
+
+struct TimeSpec {
+    uint64_t sec;
+    uint64_t nsec;
+};
 
 struct Stat {
     tux_dev_t st_dev;

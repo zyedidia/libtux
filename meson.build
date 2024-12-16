@@ -1,5 +1,5 @@
 project(
-  'lfi',
+  'libtux',
   ['c'],
   default_options: ['warning_level=3', 'buildtype=debugoptimized', 'c_std=gnu11'],
   meson_version: '>=0.60.3',

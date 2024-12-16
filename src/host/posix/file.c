@@ -135,6 +135,60 @@ host_fstat(struct HostFile* file, struct Stat* stat_)
     return 0;
 }
 
+int
+host_truncate(const char* path, off_t length)
+{
+    int r = truncate(path, length);
+    if (r < 0)
+        return tuxerr(errno);
+    return 0;
+}
+
+int
+host_ftruncate(struct HostFile* file, off_t length)
+{
+    int r = ftruncate(file->fd, length);
+    if (r < 0)
+        return tuxerr(errno);
+    return 0;
+}
+
+int
+host_chown(const char* path, tux_uid_t owner, tux_gid_t group)
+{
+    int r = chown(path, owner, group);
+    if (r < 0)
+        return tuxerr(errno);
+    return 0;
+}
+
+int
+host_fchown(struct HostFile* file, tux_uid_t owner, tux_gid_t group)
+{
+    int r = fchown(file->fd, owner, group);
+    if (r < 0)
+        return tuxerr(errno);
+    return 0;
+}
+
+int
+host_chmod(const char* path, tux_mode_t mode)
+{
+    int r = chmod(path, mode);
+    if (r < 0)
+        return tuxerr(errno);
+    return 0;
+}
+
+int
+host_fchmod(struct HostFile* file, tux_mode_t mode)
+{
+    int r = fchmod(file->fd, mode);
+    if (r < 0)
+        return tuxerr(errno);
+    return 0;
+}
+
 static int
 mmapprot(int prot)
 {

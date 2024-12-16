@@ -105,6 +105,18 @@ ssize_t sys_pread64(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size, ss
 
 int sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t statbufp, int flags);
 
+int sys_fchmod(struct TuxProc* p, int fd, tux_mode_t mode);
+
+int sys_chmod(struct TuxProc* p, uintptr_t pathp, tux_mode_t mode);
+
+int sys_fchown(struct TuxProc* p, int fd, tux_uid_t owner, tux_gid_t group);
+
+int sys_chown(struct TuxProc* p, uintptr_t pathp, tux_uid_t owner, tux_gid_t group);
+
+int sys_ftruncate(struct TuxProc* p, int fd, off_t length);
+
+int sys_truncate(struct TuxProc* p, uintptr_t pathp, off_t length);
+
 ssize_t sys_getdents64(struct TuxProc* p, int fd, asuserptr_t dirp, size_t count);
 
 off_t sys_lseek(struct TuxProc* p, int fd, off_t offset, int whence);
@@ -124,3 +136,5 @@ int sys_sched_getaffinity(struct TuxProc* p, int32_t pid, uint64_t cpusetsize, i
 int sys_sched_setaffinity(struct TuxProc* p, int32_t pid, uint64_t cpusetsize, int64_t maskaddr);
 
 int sys_sched_yield(struct TuxProc* p);
+
+tux_time_t sys_time(struct TuxProc* p, uintptr_t tlocp);
