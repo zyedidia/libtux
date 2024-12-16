@@ -53,14 +53,6 @@ procpath(struct TuxProc* p, asuserptr_t pathp)
     return str;
 }
 
-static inline int
-syserr(int val)
-{
-    if (val == -1)
-        return -errno;
-    return val;
-}
-
 ssize_t sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size);
 
 uintptr_t sys_exit(struct TuxProc* p, int val);

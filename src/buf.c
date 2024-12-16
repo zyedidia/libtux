@@ -5,7 +5,7 @@
 buf_t
 bufreadfile(const char* filename)
 {
-    struct HostFile* f = host_open(filename, TUX_O_RDONLY, 0);
+    struct HostFile* f = host_openat(NULL, filename, TUX_O_RDONLY, 0);
     if (!f)
         return (buf_t) {NULL, 0};
     ssize_t size = host_seek(f, 0, TUX_SEEK_END);

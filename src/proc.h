@@ -41,7 +41,7 @@ struct FDTable {
 
 struct Dir {
     char name[TUX_PATH_MAX];
-    int fd;
+    struct HostFile* file;
 };
 
 struct TuxProc {

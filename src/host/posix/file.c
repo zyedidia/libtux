@@ -23,12 +23,12 @@ openflags(int flags)
 }
 
 struct HostFile*
-host_open(const char* path, int flags, int mode)
+host_openat(struct HostFile* dir, const char* path, int flags, int mode)
 {
     struct HostFile* hf = malloc(sizeof(struct HostFile));
     if (!hf)
         return NULL;
-    int fd = open(path, openflags(flags), mode);
+    int fd = openat(dir ? dir->fd : AT_FDCWD, path, openflags(flags), mode);
     if (fd < 0)
         goto err;
     *hf = (struct HostFile) {
@@ -125,10 +125,16 @@ host_stat(const char* path, struct Stat* stat_)
 }
 
 int
-host_fstat(struct HostFile* file, struct Stat* stat_)
+host_fstatat(struct HostFile* file, const char* path, struct Stat* stat_, int flags)
 {
     struct stat kstat;
-    int r = fstat(file->fd, &kstat);
+    int r;
+    if (flags == TUX_AT_EMPTY_PATH) {
+        r = fstat(file->fd, &kstat);
+    } else {
+        assert(flags == 0);
+        r = fstatat(file ? file->fd : AT_FDCWD, path, &kstat, 0);
+    }
     if (r < 0)
         return tuxerr(errno);
     copystat(stat_, &kstat);
@@ -154,9 +160,15 @@ host_ftruncate(struct HostFile* file, off_t length)
 }
 
 int
-host_chown(const char* path, tux_uid_t owner, tux_gid_t group)
+host_fchownat(struct HostFile* dir, const char* path, tux_uid_t owner, tux_gid_t group, int flags)
 {
-    int r = chown(path, owner, group);
+    int r;
+    if (flags == TUX_AT_EMPTY_PATH) {
+        assert(dir);
+        r = fchown(dir->fd, owner, group);
+    } else {
+        r = fchownat(dir ? dir->fd : AT_FDCWD, path, owner, group, 0);
+    }
     if (r < 0)
         return tuxerr(errno);
     return 0;
@@ -172,9 +184,10 @@ host_fchown(struct HostFile* file, tux_uid_t owner, tux_gid_t group)
 }
 
 int
-host_chmod(const char* path, tux_mode_t mode)
+host_fchmodat(struct HostFile* dir, const char* path, tux_mode_t mode, int flags)
 {
-    int r = chmod(path, mode);
+    assert(flags == 0);
+    int r = fchmodat(dir ? dir->fd : AT_FDCWD, path, mode, 0);
     if (r < 0)
         return tuxerr(errno);
     return 0;

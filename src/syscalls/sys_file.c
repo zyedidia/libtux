@@ -172,7 +172,7 @@ sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t stat
             return -TUX_EFAULT;
         if (dirfd != TUX_AT_FDCWD)
             return -TUX_EBADF;
-        return syserr(filefstatat(p->cwd.name, path, stat, flags));
+        return host_fstatat(p->cwd.file, path, stat, 0);
     }
     struct FDFile* f = fdget(&p->fdtable, dirfd);
     if (!f)
@@ -238,12 +238,7 @@ sys_chown(struct TuxProc* p, uintptr_t pathp, tux_uid_t owner, tux_gid_t group)
     const char* path = procpath(p, pathp);
     if (!path)
         return -TUX_EFAULT;
-    char buffer[TUX_PATH_MAX];
-    if (!cwk_path_is_absolute(path)) {
-        cwk_path_join(p->cwd.name, path, buffer, sizeof(buffer));
-        path = buffer;
-    }
-    return host_chown(path, owner, group);
+    return host_fchownat(p->cwd.file, path, owner, group, 0);
 }
 
 int
@@ -263,12 +258,7 @@ sys_chmod(struct TuxProc* p, uintptr_t pathp, tux_mode_t mode)
     const char* path = procpath(p, pathp);
     if (!path)
         return -TUX_EFAULT;
-    char buffer[TUX_PATH_MAX];
-    if (!cwk_path_is_absolute(path)) {
-        cwk_path_join(p->cwd.name, path, buffer, sizeof(buffer));
-        path = buffer;
-    }
-    return host_chmod(path, mode);
+    return host_fchmodat(p->cwd.file, path, mode, 0);
 }
 
 int

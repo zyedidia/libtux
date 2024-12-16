@@ -33,7 +33,7 @@ filenew(struct Tux* tux, const char* dir, const char* path, int flags, int mode)
     if ((flags & TUX_O_CLOEXEC) != 0)
         flags &= ~TUX_O_CLOEXEC;
 
-    struct HostFile* f = host_open(path, flags, mode);
+    struct HostFile* f = host_openat(NULL, path, flags, mode);
     if (!f)
         return NULL;
     return filefnew(f, fullflags);
@@ -88,20 +88,6 @@ fileclose(void* dev, struct TuxProc* p)
 {
     int x = host_close(filef(dev));
     return x;
-}
-
-int
-filefstatat(const char* dir, const char* path, struct Stat* stat_, int flags)
-{
-    char buffer[TUX_PATH_MAX];
-    if (!cwk_path_is_absolute(path)) {
-        cwk_path_join(dir, path, buffer, sizeof(buffer));
-        path = buffer;
-    }
-
-    // TODO: fstatat flags are currently ignored
-
-    return host_stat(path, stat_);
 }
 
 static int

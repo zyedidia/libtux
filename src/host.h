@@ -11,7 +11,7 @@ struct HostFile;
 
 struct Stat;
 
-struct HostFile* host_open(const char* filename, int flags, int mode);
+struct HostFile* host_openat(struct HostFile* dir, const char* filename, int flags, int mode);
 
 ssize_t host_read(struct HostFile* file, uint8_t* buffer, size_t size);
 
@@ -19,17 +19,27 @@ ssize_t host_write(struct HostFile* file, uint8_t* buffer, size_t size);
 
 ssize_t host_seek(struct HostFile* file, size_t loc, int whence);
 
-int host_fstat(struct HostFile* file, struct Stat* stat);
-int host_stat(const char* path, struct Stat* stat);
+int host_fstatat(struct HostFile* file, const char* path, struct Stat* stat, int flags);
 
+static inline int
+host_fstat(struct HostFile* file, struct Stat* stat)
+{
+    return host_fstatat(file, "", stat, TUX_AT_EMPTY_PATH);
+}
+
+int host_fchmodat(struct HostFile* dir, const char* path, tux_mode_t mode, int flags);
 int host_fchmod(struct HostFile* file, tux_mode_t mode);
-int host_chmod(const char* path, tux_mode_t mode);
 
 int host_ftruncate(struct HostFile* file, off_t length);
 int host_truncate(const char* path, off_t length);
 
-int host_fchown(struct HostFile* file, tux_uid_t owner, tux_gid_t group);
-int host_chown(const char* path, tux_uid_t owner, tux_gid_t group);
+int host_fchownat(struct HostFile* file, const char* path, tux_uid_t owner, tux_gid_t group, int flags);
+
+static inline int
+host_fchown(struct HostFile* file, tux_uid_t owner, tux_gid_t group)
+{
+    return host_fchownat(file, "", owner, group, TUX_AT_EMPTY_PATH);
+}
 
 ssize_t host_getdents64(struct HostFile* file, void* dirp, size_t count);
 

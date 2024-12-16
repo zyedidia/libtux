@@ -4,7 +4,7 @@
 #include <errno.h>
 
 #include "arch_regs.h"
-
+#include "cwalk.h"
 #include "print.h"
 #include "fd.h"
 #include "buf.h"
@@ -64,14 +64,18 @@ procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv)
     char* interppath = elfinterp(prog, progsz);
     buf_t interp = (buf_t){NULL, 0};
     if (interppath) {
-        interp = bufreadfile(interppath);
-        if (!interp.data) {
-            WARN("error opening dynamic linker %s: %s", interppath, strerror(errno));
+        if (cwk_path_is_absolute(interppath)) {
+            interp = bufreadfile(interppath);
+            if (!interp.data) {
+                WARN("error opening dynamic linker %s: %s", interppath, strerror(errno));
+                free(interppath);
+                return false;
+            }
+            VERBOSE(p->tux, "dynamic linker: %s", interppath);
             free(interppath);
-            return false;
+        } else {
+            WARN("interpreter ignored because it is relative path: %s", interppath);
         }
-        VERBOSE(p->tux, "dynamic linker: %s", interppath);
-        free(interppath);
     }
 
     bool success = true;
