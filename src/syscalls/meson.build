@@ -8,5 +8,6 @@ srcs += files(
   'sys_random.c',
   'sys_thread.c',
   'sys_signal.c',
+  'sys_fcntl.c',
   'strace.c',
 )

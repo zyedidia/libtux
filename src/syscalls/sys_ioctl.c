@@ -19,13 +19,16 @@ sys_ioctl(struct TuxProc* p, int fd, unsigned long request, uintptr_t va0,
 {
     if (fd != 1)
         return -TUX_EINVAL;
-    if (request != TUX_TIOCGWINSZ)
+    if (request != TUX_TIOCGWINSZ) {
+        WARN("unknown ioctl request: %ld", request);
         return -TUX_EINVAL;
+    }
     uint8_t* wsb = procbufalign(p, va0, sizeof(struct WinSize), alignof(struct WinSize));
     if (!wsb)
         return -TUX_EFAULT;
     struct WinSize* tux_ws = (struct WinSize*) wsb;
     struct winsize ws;
+    // TODO: use host call for this
     int err = ioctl(fileno(stdin), TIOCGWINSZ, &ws);
     if (err != 0)
         return -errno;

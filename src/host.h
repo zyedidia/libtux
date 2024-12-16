@@ -43,8 +43,6 @@ host_fchown(struct HostFile* file, tux_uid_t owner, tux_gid_t group)
 
 ssize_t host_getdents64(struct HostFile* file, void* dirp, size_t count);
 
-// host_readlink
-
 int host_close(struct HostFile* file);
 
 struct HostFile* host_stdin(void);
