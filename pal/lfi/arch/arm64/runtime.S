@@ -1,36 +1,38 @@
+#include "arch/arm64/regs.h"
+
 #define N_RTCALLS 256
 #define PROC_REGS 16
 
-// Puts Proc* in x21.
+// Puts Proc* in REG_BASE.
 .macro GET_PROC
 // On Apple Silicon we do not use thread-locals to keep track of the current
 // process because the macOS TLS implementation has a terrible calling
-// convention. Instead we require sysexternal on Apple, and use x25.
+// convention. Instead we require sysexternal on Apple, and use REG_SYS.
 #ifdef __APPLE__
-	ldr x21, [x25, 8*N_RTCALLS+8]
+	ldr REG_BASE, [REG_SYS, 8*N_RTCALLS+8]
 #else
-	mrs	x21, tpidr_el0
-	add	x21, x21, #:tprel_hi12:lfi_myproc, lsl #12
-	add	x21, x21, #:tprel_lo12_nc:lfi_myproc
-	ldr	x21, [x21]
+	mrs	REG_BASE, tpidr_el0
+	add	REG_BASE, REG_BASE, #:tprel_hi12:lfi_myproc, lsl #12
+	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:lfi_myproc
+	ldr	REG_BASE, [REG_BASE]
 #endif
 .endm
 
-// save caller-saved registers, assuming sandbox syspage is x21
+// save caller-saved registers, assuming sandbox syspage is REG_BASE
 .macro SAVE_PARTIAL_REGS
 	GET_PROC
-	stp x0, x1,   [x21, PROC_REGS+16*0]
-	stp x2, x3,   [x21, PROC_REGS+16*1]
-	stp x4, x5,   [x21, PROC_REGS+16*2]
-	stp x6, x7,   [x21, PROC_REGS+16*3]
-	stp x8, x9,   [x21, PROC_REGS+16*4]
-	stp x10, x11, [x21, PROC_REGS+16*5]
-	stp x12, x13, [x21, PROC_REGS+16*6]
-	stp x14, x15, [x21, PROC_REGS+16*7]
-	stp x16, x17, [x21, PROC_REGS+16*8]
-	str x18,      [x21, PROC_REGS+16*9]
+	stp x0, x1,   [REG_BASE, PROC_REGS+16*0]
+	stp x2, x3,   [REG_BASE, PROC_REGS+16*1]
+	stp x4, x5,   [REG_BASE, PROC_REGS+16*2]
+	stp x6, x7,   [REG_BASE, PROC_REGS+16*3]
+	stp x8, x9,   [REG_BASE, PROC_REGS+16*4]
+	stp x10, x11, [REG_BASE, PROC_REGS+16*5]
+	stp x12, x13, [REG_BASE, PROC_REGS+16*6]
+	stp x14, x15, [REG_BASE, PROC_REGS+16*7]
+	stp x16, x17, [REG_BASE, PROC_REGS+16*8]
+	str x18,      [REG_BASE, PROC_REGS+16*9]
 	mov x1, sp
-	stp x30, x1,  [x21, PROC_REGS+16*15]
+	stp x30, x1,  [REG_BASE, PROC_REGS+16*15]
 	// TODO: save SIMD registers
 .endm
 
@@ -129,7 +131,7 @@ pal_asm_ctx_exit:
 .global pal_get_tp
 pal_get_tp:
 #ifdef __APPLE__
-	ldr x0, [x25, 8*N_RTCALLS+8]
+	ldr x0, [REG_SYS, 8*N_RTCALLS+8]
 #else
 	mrs	x0, tpidr_el0
 	add	x0, x0, #:tprel_hi12:lfi_myproc, lsl #12
@@ -137,34 +139,34 @@ pal_get_tp:
 	ldr	x0, [x0]
 #endif
 	ldr x0, [x0, #8]
-	add x30, x21, w30, uxtw
+	add x30, REG_BASE, w30, uxtw
 	ret
 
-// Sets the sandbox's thread pointer to x0 and clobbers x22.
+// Sets the sandbox's thread pointer to x0 and clobbers REG_TEMP.
 .p2align 4
 .global pal_set_tp
 pal_set_tp:
 #ifdef __APPLE__
-	ldr x22, [x25, 8*N_RTCALLS+8]
+	ldr REG_TEMP, [REG_SYS, 8*N_RTCALLS+8]
 #else
-	mrs	x22, tpidr_el0
-	add	x22, x22, #:tprel_hi12:lfi_myproc, lsl #12
-	add	x22, x22, #:tprel_lo12_nc:lfi_myproc
-	ldr	x22, [x22]
+	mrs	REG_TEMP, tpidr_el0
+	add	REG_TEMP, REG_TEMP, #:tprel_hi12:pal_myctx, lsl #12
+	add	REG_TEMP, REG_TEMP, #:tprel_lo12_nc:pal_myctx
+	ldr	REG_TEMP, [REG_TEMP]
 #endif
-	str x0, [x22, #8]
-	add x30, x21, w30, uxtw
+	str x0, [REG_TEMP, #8]
+	add x30, REG_BASE, w30, uxtw
 	ret
 
 .p2align 4
 .global pal_syscall_entry
 pal_syscall_entry:
 	SAVE_PARTIAL_REGS
-	// x21 now contains Proc*
-	ldr x1, [x21] // load stack
+	// REG_BASE now contains Proc*
+	ldr x1, [REG_BASE] // load stack
 	mov sp, x1
-	str x21, [sp, #-16]!
-	mov x0, x21
+	str REG_BASE, [sp, #-16]!
+	mov x0, REG_BASE
 	bl pal_syscall_handler
 	ldr x0, [sp], 16
 // Restore only caller-saved registers.
@@ -179,10 +181,10 @@ pal_restore_partial_regs:
 	ldp x14, x15, [x0, PROC_REGS+16*7]
 	ldp x16, x17, [x0, PROC_REGS+16*8]
 	ldr x18,      [x0, PROC_REGS+16*9]
-	ldr x21,      [x0, PROC_REGS+16*10+8]
+	ldr REG_BASE, [x0, PROC_REGS+REG_BASE_OFFSET]
 	ldp x30, x1,  [x0, PROC_REGS+16*15]
 	// TODO: restore SIMD registers
 	mov sp, x1
 	ldp x0, x1,   [x0, PROC_REGS+16*0]
-	add x30, x21, w30, uxtw
+	add x30, REG_BASE, w30, uxtw
 	ret

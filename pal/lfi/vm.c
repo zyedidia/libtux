@@ -59,6 +59,7 @@ static int
 asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot,
         int flags, struct HostFile* hf, off_t off)
 {
+    // TODO: verify
     void* mem = host_mmap((void*) start, size, prot, flags | MAP_FIXED, hf, off);
     if (mem == (void*) -1)
         return -errno;
@@ -110,6 +111,8 @@ int
 pal_as_mprotect(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot)
 {
     assert(addr >= as->minaddr && addr + size <= as->maxaddr);
+
+    // TODO: verify
 
     // TODO: mark the mapping with libmmap?
 
