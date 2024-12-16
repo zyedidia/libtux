@@ -53,6 +53,18 @@ arch_syshandle(struct PlatContext* ctx)
     case TUX_SYS_access:
         regs->rax = -TUX_ENOSYS;
         break;
+    case TUX_SYS_unlink:
+        regs->rax = sys_unlink(proc, regs->rdi);
+        break;
+    case TUX_SYS_time:
+        regs->rax = sys_time(proc, regs->rdi);
+        break;
+    case TUX_SYS_chown:
+        regs->rax = sys_chown(proc, regs->rdi, regs->rsi, regs->rdx);
+        break;
+    case TUX_SYS_chmod:
+        regs->rax = sys_chmod(proc, regs->rdi, regs->rsi);
+        break;
     default:
         // Generic syscalls.
         regs->rax = syshandle(proc, regs->rax, regs->rdi, regs->rsi, regs->rdx,

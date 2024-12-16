@@ -105,12 +105,21 @@ copystat(struct Stat* stat_, struct stat* kstat)
     stat_->st_size = kstat->st_size;
     stat_->st_blksize = kstat->st_blksize;
     stat_->st_blocks = kstat->st_blocks;
+#ifdef __APPLE__
+    stat_->st_atim.sec  = kstat->st_atimespec.tv_sec;
+    stat_->st_atim.nsec = kstat->st_atimespec.tv_nsec;
+    stat_->st_mtim.sec  = kstat->st_mtimespec.tv_sec;
+    stat_->st_mtim.nsec = kstat->st_mtimespec.tv_nsec;
+    stat_->st_ctim.sec  = kstat->st_ctimespec.tv_sec;
+    stat_->st_ctim.nsec = kstat->st_ctimespec.tv_nsec;
+#else
     stat_->st_atim.sec  = kstat->st_atim.tv_sec;
     stat_->st_atim.nsec = kstat->st_atim.tv_nsec;
     stat_->st_mtim.sec  = kstat->st_mtim.tv_sec;
     stat_->st_mtim.nsec = kstat->st_mtim.tv_nsec;
     stat_->st_ctim.sec  = kstat->st_ctim.tv_sec;
     stat_->st_ctim.nsec = kstat->st_ctim.tv_nsec;
+#endif
 }
 
 int

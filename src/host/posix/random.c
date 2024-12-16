@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <sys/random.h>
 
 #include "host/error.h"
 
