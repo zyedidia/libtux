@@ -1,10 +1,6 @@
 #include <stdalign.h>
 #include <errno.h>
 
-// TODO: for readlinkat, not portable
-#include <unistd.h>
-#include <fcntl.h>
-
 #include "cwalk.h"
 
 #include "syscalls/syscalls.h"
@@ -133,7 +129,7 @@ sys_readlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t bufp
     uint8_t* buf = procbuf(p, bufp, size);
     if (!path || !buf)
         return -TUX_EFAULT;
-    int r = readlinkat(AT_FDCWD, path, (char*) buf, size);
+    int r = host_readlinkat(NULL, path, (char*) buf, size);
     if (r < 0)
         return -errno;
     return r;
@@ -174,7 +170,7 @@ sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t stat
         const char* path = procpath(p, pathp);
         if (!path)
             return -TUX_EFAULT;
-        if (dirfd != AT_FDCWD)
+        if (dirfd != TUX_AT_FDCWD)
             return -TUX_EBADF;
         return syserr(filefstatat(p->cwd.name, path, stat, flags));
     }
@@ -309,4 +305,26 @@ sys_fsync(struct TuxProc* p, int fd)
     if (!f->sync)
         return -TUX_EPERM;
     return f->sync(f->dev, p);
+}
+
+int
+sys_unlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags)
+{
+    if (dirfd != TUX_AT_FDCWD)
+        return -TUX_EINVAL;
+    if (flags != 0 && flags != TUX_AT_REMOVEDIR)
+        return -TUX_EINVAL;
+    const char* path = procpath(p, pathp);
+    if (!path)
+        return -TUX_EFAULT;
+    int r = host_unlinkat(NULL, path, flags);
+    if (r < 0)
+        return -errno;
+    return r;
+}
+
+int
+sys_unlink(struct TuxProc* p, asuserptr_t pathp)
+{
+    return sys_unlinkat(p, TUX_AT_FDCWD, pathp, 0);
 }

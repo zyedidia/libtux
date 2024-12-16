@@ -240,6 +240,30 @@ host_fsync(struct HostFile* file)
     return 0;
 }
 
+static int
+unlinkflags(int flags)
+{
+    return ((flags & TUX_AT_REMOVEDIR) ? AT_REMOVEDIR : 0);
+}
+
+int
+host_unlinkat(struct HostFile* file, const char* path, int flags)
+{
+    int r = unlinkat(file ? file->fd : AT_FDCWD, path, unlinkflags(flags));
+    if (r < 0)
+        return tuxerr(r);
+    return 0;
+}
+
+ssize_t
+host_readlinkat(struct HostFile* file, const char* path, char* buf, size_t size)
+{
+    ssize_t r = readlinkat(file ? file->fd : AT_FDCWD, path, buf, size);
+    if (r < 0)
+        return tuxerr(r);
+    return r;
+}
+
 static struct HostFile fstdin  = { .fd = STDIN_FILENO };
 static struct HostFile fstdout = { .fd = STDOUT_FILENO };
 static struct HostFile fstderr = { .fd = STDERR_FILENO };

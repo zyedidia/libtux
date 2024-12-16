@@ -56,3 +56,7 @@ int host_sched_yield(void);
 tux_time_t host_time(void);
 
 int host_fsync(struct HostFile* file);
+
+int host_unlinkat(struct HostFile* file, const char* path, int flags);
+
+ssize_t host_readlinkat(struct HostFile* file, const char* path, char* buf, size_t size);

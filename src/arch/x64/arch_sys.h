@@ -42,6 +42,7 @@ enum {
     TUX_SYS_fchdir             = 81,
     TUX_SYS_rename             = 82,
     TUX_SYS_mkdir              = 83,
+    TUX_SYS_unlink             = 87,
     TUX_SYS_readlink           = 89,
     TUX_SYS_chmod              = 90,
     TUX_SYS_fchmod             = 91,

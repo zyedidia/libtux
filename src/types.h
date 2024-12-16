@@ -54,6 +54,7 @@ enum {
 
 enum {
     TUX_AT_FDCWD      = -100,
+    TUX_AT_REMOVEDIR  = 0x200,
     TUX_AT_EMPTY_PATH = 0x1000,
 };
 

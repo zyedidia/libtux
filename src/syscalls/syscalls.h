@@ -142,3 +142,7 @@ tux_time_t sys_time(struct TuxProc* p, uintptr_t tlocp);
 uintptr_t sys_getcwd(struct TuxProc* p, uintptr_t buf, size_t size);
 
 int sys_fsync(struct TuxProc* p, int fd);
+
+int sys_unlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags);
+
+int sys_unlink(struct TuxProc* p, asuserptr_t pathp);
