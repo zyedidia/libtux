@@ -54,3 +54,5 @@ int host_mprotect(void* addr, size_t length, int prot);
 int host_sched_yield(void);
 
 tux_time_t host_time(void);
+
+int host_fsync(struct HostFile* file);

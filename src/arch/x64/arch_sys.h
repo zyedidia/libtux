@@ -34,6 +34,7 @@ enum {
     TUX_SYS_exit               = 60,
     TUX_SYS_uname              = 63,
     TUX_SYS_fcntl              = 72,
+    TUX_SYS_fsync              = 74,
     TUX_SYS_truncate           = 76,
     TUX_SYS_ftruncate          = 77,
     TUX_SYS_getcwd             = 79,

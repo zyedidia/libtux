@@ -231,6 +231,15 @@ host_mprotect(void* addr, size_t length, int prot)
     return r;
 }
 
+int
+host_fsync(struct HostFile* file)
+{
+    int r = fsync(file->fd);
+    if (r < 0)
+        return tuxerr(r);
+    return 0;
+}
+
 static struct HostFile fstdin  = { .fd = STDIN_FILENO };
 static struct HostFile fstdout = { .fd = STDOUT_FILENO };
 static struct HostFile fstderr = { .fd = STDERR_FILENO };

@@ -30,6 +30,7 @@ struct FDFile {
     int     (*chown)(void*, struct TuxProc*, tux_uid_t, tux_gid_t);
     int     (*chmod)(void*, struct TuxProc*, tux_mode_t);
     int     (*truncate)(void*, struct TuxProc*, off_t);
+    int     (*sync)(void*, struct TuxProc*);
 
     struct HostFile* (*mapfile)(void*);
 };

@@ -107,10 +107,13 @@ filefstatat(const char* dir, const char* path, struct Stat* stat_, int flags)
 static int
 filestat(void* dev, struct TuxProc* p, struct Stat* stat)
 {
-    int err = host_fstat(filef(dev), stat);
-    if (err < 0)
-        return err;
-    return 0;
+    return host_fstat(filef(dev), stat);
+}
+
+static int
+filesync(void* dev, struct TuxProc* p)
+{
+    return host_fsync(filef(dev));
 }
 
 static ssize_t
@@ -149,6 +152,7 @@ filefnew(struct HostFile* kfile, int flags)
         .truncate = filetruncate,
         .chown = filechown,
         .chmod = filechmod,
+        .sync = filesync,
         .getdents = filegetdents,
         .mapfile = filemapfile,
     };

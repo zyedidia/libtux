@@ -285,3 +285,28 @@ sys_fchmod(struct TuxProc* p, int fd, tux_mode_t mode)
         return -TUX_EPERM;
     return f->chmod(f->dev, p, mode);
 }
+
+uintptr_t
+sys_getcwd(struct TuxProc* p, uintptr_t bufp, size_t size)
+{
+    if (size == 0)
+        return 0;
+    uint8_t* buf = procbuf(p, bufp, size);
+    if (!buf)
+        return -TUX_EFAULT;
+    size = size < TUX_PATH_MAX ? size : TUX_PATH_MAX;
+    memcpy(buf, p->cwd.name, size < TUX_PATH_MAX ? size : TUX_PATH_MAX);
+    buf[size - 1] = 0;
+    return (uintptr_t) buf;
+}
+
+int
+sys_fsync(struct TuxProc* p, int fd)
+{
+    struct FDFile* f = fdget(&p->fdtable, fd);
+    if (!f)
+        return -TUX_EBADF;
+    if (!f->sync)
+        return -TUX_EPERM;
+    return f->sync(f->dev, p);
+}
