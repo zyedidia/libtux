@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 #include "tux.h"
-#include "sud.h"
+#include "lfi.h"
 
 typedef struct {
     uint8_t* data;
@@ -100,7 +100,7 @@ main(int argc, char** argv)
         return 1;
     }
 
-    struct Platform* plat = sud_new_plat(args.opts.pagesize);
+    struct Platform* plat = lfi_new_plat(args.opts.pagesize);
 
     args.opts.stacksize = mb(2);
 

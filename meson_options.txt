@@ -1,2 +1,3 @@
 option('host', type: 'string', value: 'auto', description: 'host platform')
 option('pal', type: 'string', value: 'auto', description: 'isolation layer')
+option('host_fork', type: 'boolean', value: true, description: 'use host fork implementation')

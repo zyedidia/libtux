@@ -8,6 +8,12 @@
 #include "boxmap.h"
 #include "platform.h"
 
+static size_t
+guardsize(void)
+{
+    return 80 * 1024;
+}
+
 struct PlatAddrSpace*
 pal_as_new(struct Platform* plat)
 {
@@ -18,11 +24,12 @@ pal_as_new(struct Platform* plat)
     uintptr_t base = boxmap_addspace(plat->bm, size);
     if (base == 0)
         goto err1;
+
     *as = (struct PlatAddrSpace) {
         .base = base,
         .size = size,
-        .minaddr = base,
-        .maxaddr = base + size,
+        .minaddr = base + guardsize() + plat->opts.pagesize, // for sys page
+        .maxaddr = base + size - guardsize(),
     };
     bool ok = mm_init(&as->mm, as->minaddr, as->maxaddr - as->minaddr, plat->opts.pagesize);
     if (!ok)
@@ -49,7 +56,8 @@ pal_as_info(struct PlatAddrSpace* as)
 }
 
 static int
-asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot, int flags, struct HostFile* hf, off_t off)
+asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot,
+        int flags, struct HostFile* hf, off_t off)
 {
     void* mem = host_mmap((void*) start, size, prot, flags | MAP_FIXED, hf, off);
     if (mem == (void*) -1)
@@ -58,7 +66,8 @@ asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot, int flag
 }
 
 asptr_t
-pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, struct HostFile* hf, off_t off)
+pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags,
+        struct HostFile* hf, off_t off)
 {
     asptr_t addr = mm_mapany(&as->mm, size, prot, flags, hf, off);
     if (addr == (asptr_t) -1)
@@ -75,12 +84,14 @@ static void
 cbunmap(uint64_t start, size_t len, MMInfo info, void* udata)
 {
     (void) udata, (void) info;
-    void* p = host_mmap((void*) start, len, TUX_PROT_NONE, TUX_MAP_ANONYMOUS | TUX_MAP_PRIVATE | TUX_MAP_FIXED, NULL, 0);
+    void* p = host_mmap((void*) start, len, TUX_PROT_NONE, TUX_MAP_ANONYMOUS |
+            TUX_MAP_PRIVATE | TUX_MAP_FIXED, NULL, 0);
     assert(p == (void*) start);
 }
 
 asptr_t
-pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, struct HostFile* hf, off_t off)
+pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot,
+        int flags, struct HostFile* hf, off_t off)
 {
     assert(addr >= as->minaddr && addr + size <= as->maxaddr);
 

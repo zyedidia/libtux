@@ -36,7 +36,7 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
     struct PlatAddrSpace* as = pal_as_new(tux->plat);
     if (!as)
         goto err1;
-    struct PlatContext* ctx = pal_ctx_new(tux->plat, p);
+    struct PlatContext* ctx = pal_ctx_new(tux->plat, as, p);
     if (!ctx)
         goto err2;
     p->p_as = as;
@@ -172,9 +172,8 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
     if (interp != NULL)
         entry = info.ldentry;
 
-    struct TuxRegs regs = (struct TuxRegs) {0};
-    regs_init(&regs, entry, sp);
-    *pal_ctx_regs(p->p_ctx) = regs;
+    struct TuxRegs* regs = pal_ctx_regs(p->p_ctx);
+    regs_init(regs, entry, sp);
 
     p->brkbase = info.lastva;
     p->brksize = 0;

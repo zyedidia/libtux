@@ -68,7 +68,7 @@ endif
 pal = get_option('pal')
 if pal == 'auto'
   # TODO: pick a valid isolation layer based on the chosen host
-  pal = 'sud'
+  pal = 'lfi'
 endif
 
 subdir('src')
