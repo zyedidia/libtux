@@ -71,3 +71,5 @@ ssize_t host_readlinkat(struct HostFile* file, const char* path, char* buf, size
 
 int host_renameat2(struct HostFile* olddir, const char* oldpath,
         struct HostFile* newdir, const char* newpath, int flags);
+
+int host_faccessat2(struct HostFile* dir, const char* path, int mode, int flags);

@@ -51,7 +51,7 @@ arch_syshandle(struct PlatContext* ctx)
         regs->rax = sys_readlink(proc, regs->rdi, regs->rsi, regs->rdx);
         break;
     case TUX_SYS_access:
-        regs->rax = -TUX_ENOSYS;
+        regs->rax = sys_access(proc, regs->rdi, regs->rsi);
         break;
     case TUX_SYS_unlink:
         regs->rax = sys_unlink(proc, regs->rdi);

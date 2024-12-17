@@ -145,3 +145,9 @@ int sys_fcntl(struct TuxProc* p, int fd, int cmd, uintptr_t va0, uintptr_t va1,
 int sys_renameat(struct TuxProc* p, int olddir, uintptr_t oldpath, int newdir, uintptr_t newpath);
 
 int sys_rename(struct TuxProc* p, uintptr_t oldpath, uintptr_t newpath);
+
+int sys_faccessat2(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode, int flags);
+
+int sys_faccessat(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode);
+
+int sys_access(struct TuxProc* p, uintptr_t pathp, int mode);

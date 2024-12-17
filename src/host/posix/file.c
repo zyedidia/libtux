@@ -297,6 +297,16 @@ host_renameat2(struct HostFile* olddir, const char* oldpath,
     return 0;
 }
 
+int
+host_faccessat2(struct HostFile* dir, const char* path, int mode, int flags)
+{
+    assert(flags == 0);
+    int r = faccessat(dir ? dir->fd : AT_FDCWD, path, mode, 0);
+    if (r < 0)
+        return tuxerr(r);
+    return 0;
+}
+
 static struct HostFile fstdin  = { .fd = STDIN_FILENO };
 static struct HostFile fstdout = { .fd = STDOUT_FILENO };
 static struct HostFile fstderr = { .fd = STDERR_FILENO };

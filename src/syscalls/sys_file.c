@@ -336,3 +336,30 @@ sys_rename(struct TuxProc* p, uintptr_t oldpathp, uintptr_t newpathp)
 {
     return sys_renameat(p, TUX_AT_FDCWD, oldpathp, TUX_AT_FDCWD, newpathp);
 }
+
+int
+sys_faccessat2(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode, int flags)
+{
+    if (dirfd != TUX_AT_FDCWD)
+        return -TUX_EINVAL;
+    if (flags != 0) {
+        WARN("faccessat2 used with non-zero flags");
+        return -TUX_EINVAL;
+    }
+    const char* path = procpath(p, pathp);
+    if (!path)
+        return -TUX_EFAULT;
+    return host_faccessat2(NULL, path, mode, 0);
+}
+
+int
+sys_faccessat(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode)
+{
+    return sys_faccessat2(p, dirfd, pathp, mode, 0);
+}
+
+int
+sys_access(struct TuxProc* p, uintptr_t pathp, int mode)
+{
+    return sys_faccessat2(p, TUX_AT_FDCWD, pathp, mode, 0);
+}
