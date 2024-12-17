@@ -10,9 +10,11 @@
         break;
 
 uintptr_t
-syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
+syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
         uintptr_t a2, uintptr_t a3, uintptr_t a4, uintptr_t a5)
 {
+    struct TuxProc* proc = p->proc;
+
     uintptr_t r = -TUX_ENOSYS;
     switch (sysno) {
     SYS(gettid,            0)
@@ -20,8 +22,8 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(write,             sys_write(proc, a0, a1, a2))
     SYS(read,              sys_read(proc, a0, a1, a2))
     SYS(lseek,             sys_lseek(proc, a0, a1, a2))
-    SYS(exit,              sys_exit(proc, a0))
-    SYS(exit_group,        sys_exit_group(proc, a0))
+    SYS(exit,              sys_exit(p, a0))
+    SYS(exit_group,        sys_exit_group(p, a0))
     SYS(brk,               sys_brk(proc, a0))
     SYS(openat,            sys_openat(proc, a0, a1, a2, a3))
     SYS(close,             sys_close(proc, a0))

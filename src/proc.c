@@ -13,40 +13,48 @@
 
 #include "syscalls/syscalls.h"
 
-static bool procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, int argc, char** argv);
-static bool procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv);
-static void procfree(struct TuxProc*);
+static bool procsetup(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, int argc, char** argv);
+static bool procfile(struct TuxThread* p, uint8_t* prog, size_t progsz, int argc, char** argv);
+static void procfree(struct TuxThread*);
 
-static struct TuxProc*
+static struct TuxThread*
 procnewempty(void)
 {
-    struct TuxProc* p = calloc(sizeof(struct TuxProc), 1);
-    if (!p)
+    struct TuxProc* proc = calloc(sizeof(struct TuxProc), 1);
+    if (!proc)
         return NULL;
+    struct TuxThread* p = calloc(sizeof(struct TuxThread), 1);
+    if (!p)
+        goto err;
+    p->proc = proc;
     return p;
+
+err:
+    free(proc);
+    return NULL;
 }
 
-static struct TuxProc*
+static struct TuxThread*
 procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
 {
-    struct TuxProc* p = procnewempty();
+    struct TuxThread* p = procnewempty();
     if (!p)
         return NULL;
-    p->tux = tux;
+    p->proc->tux = tux;
     struct PlatAddrSpace* as = pal_as_new(tux->plat);
     if (!as)
         goto err1;
     struct PlatContext* ctx = pal_ctx_new(tux->plat, as, p);
     if (!ctx)
         goto err2;
-    p->p_as = as;
-    p->p_info = pal_as_info(as);
+    p->proc->p_as = as;
+    p->proc->p_info = pal_as_info(as);
     p->p_ctx = ctx;
 
     if (!procfile(p, prog, size, argc, argv))
         goto err3;
 
-    fdinit(tux, &p->fdtable);
+    fdinit(tux, &p->proc->fdtable);
 
     return p;
 err3:
@@ -59,7 +67,7 @@ err1:
 }
 
 static bool
-procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv)
+procfile(struct TuxThread* p, uint8_t* prog, size_t progsz, int argc, char** argv)
 {
     char* interppath = elfinterp(prog, progsz);
     buf_t interp = (buf_t){NULL, 0};
@@ -71,7 +79,7 @@ procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv)
                 free(interppath);
                 return false;
             }
-            VERBOSE(p->tux, "dynamic linker: %s", interppath);
+            VERBOSE(p->proc->tux, "dynamic linker: %s", interppath);
         } else {
             WARN("interpreter ignored because it is relative path: %s", interppath);
         }
@@ -157,7 +165,7 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
 }
 
 static bool
-procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, int argc, char** argv)
+procsetup(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, int argc, char** argv)
 {
     struct ELFLoadInfo info = {0};
     bool b = elfload(p, prog, progsz, interp, interpsz, &info);
@@ -165,7 +173,7 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
         return false;
 
     asptr_t sp;
-    if (!stacksetup(p, argc, argv, &info, &sp))
+    if (!stacksetup(p->proc, argc, argv, &info, &sp))
         return false;
 
     asptr_t entry = info.elfentry;
@@ -175,12 +183,12 @@ procsetup(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size
     struct TuxRegs* regs = pal_ctx_regs(p->p_ctx);
     regs_init(regs, entry, sp);
 
-    p->brkbase = info.lastva;
-    p->brksize = 0;
+    p->proc->brkbase = info.lastva;
+    p->proc->brksize = 0;
 
     // Reserve the brk region.
     const int mapflags = TUX_MAP_PRIVATE | TUX_MAP_ANONYMOUS;
-    asptr_t brkregion = pal_as_mapat(p->p_as, p->brkbase, TUX_BRKMAXSIZE, TUX_PROT_NONE, mapflags, NULL, 0);
+    asptr_t brkregion = pal_as_mapat(p->proc->p_as, p->proc->brkbase, TUX_BRKMAXSIZE, TUX_PROT_NONE, mapflags, NULL, 0);
     if (brkregion == (asptr_t) -1)
         return false;
 
@@ -233,13 +241,13 @@ procunmap(struct TuxProc* p, asptr_t start, size_t size)
 }
 
 static void
-procfree(struct TuxProc* proc)
+procfree(struct TuxThread* p)
 {
-    (void) proc;
-    // TODO: free proc
+    (void) p;
+    // TODO: free p
 }
 
-struct TuxProc*
+struct TuxThread*
 tux_proc_newfile(struct Tux* tux, uint8_t* prog, size_t progsz, int argc, char** argv)
 {
     return procnewfile(tux, prog, progsz, argc, argv);

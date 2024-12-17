@@ -173,7 +173,7 @@ err1:
 int perf_output_jit_interface_file(uint8_t*, size_t, uintptr_t);
 
 bool
-elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, size_t interpsz, struct ELFLoadInfo* o_info)
+elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, size_t interpsz, struct ELFLoadInfo* o_info)
 {
     buf_t prog = (buf_t) {
         .data = progdat,
@@ -185,19 +185,19 @@ elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, 
         .size = interpsz,
     };
 
-    size_t stacksize = p->tux->opts.stacksize;
-    asptr_t stack = pal_as_mapat(p->p_as, p->p_info.maxaddr - stacksize, stacksize, TUX_PROT_READ | TUX_PROT_WRITE, MAPANON, NULL, 0);
+    size_t stacksize = p->proc->tux->opts.stacksize;
+    asptr_t stack = pal_as_mapat(p->proc->p_as, p->proc->p_info.maxaddr - stacksize, stacksize, TUX_PROT_READ | TUX_PROT_WRITE, MAPANON, NULL, 0);
     if (stack == (asptr_t) -1)
         goto err;
     p->stack = stack;
 
-    asptr_t base = p->p_info.minaddr;
+    asptr_t base = p->proc->p_info.minaddr;
     asptr_t pfirst, plast, pentry, ifirst, ilast, ientry;
     bool hasinterp = interp.data != NULL;
-    if (!load(p, prog, base, &pfirst, &plast, &pentry))
+    if (!load(p->proc, prog, base, &pfirst, &plast, &pentry))
         goto err;
     if (hasinterp)
-        if (!load(p, interp, plast, &ifirst, &ilast, &ientry))
+        if (!load(p->proc, interp, plast, &ifirst, &ilast, &ientry))
             goto err;
 
     if (p->tux->opts.perf) {

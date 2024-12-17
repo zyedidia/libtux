@@ -46,7 +46,7 @@ err1:
 }
 
 uint64_t
-tux_proc_start(struct Tux* tux, struct TuxProc* p)
+tux_proc_start(struct Tux* tux, struct TuxThread* p)
 {
-    return pal_ctx_run(p->p_ctx, p->p_as);
+    return pal_ctx_run(p->p_ctx, p->proc->p_as);
 }

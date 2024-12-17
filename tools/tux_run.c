@@ -116,7 +116,7 @@ main(int argc, char** argv)
         return 1;
     }
 
-    struct TuxProc* p = tux_proc_newfile(tux, f.data, f.size, args.ninputs, &args.inputs[0]);
+    struct TuxThread* p = tux_proc_newfile(tux, f.data, f.size, args.ninputs, &args.inputs[0]);
     if (!p) {
         fprintf(stderr, "error creating process\n");
         return 1;

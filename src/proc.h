@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <pthread.h>
 
 #include "tux.h"
 #include "tux_pal.h"
@@ -45,18 +46,24 @@ struct Dir {
 };
 
 struct TuxProc {
-    struct PlatContext* p_ctx;
     struct PlatAddrSpace* p_as;
-    struct Tux* tux;
-    struct TuxAddrSpaceInfo p_info;
+    asptr_t brkbase;
+    size_t brksize;
+    pthread_mutex_t lk_as;
 
     struct FDTable fdtable;
     struct Dir cwd;
+    pthread_mutex_t lk_files;
 
+    struct Tux* tux;
+    struct TuxAddrSpaceInfo p_info;
+};
+
+struct TuxThread {
+    struct PlatContext* p_ctx;
     asptr_t stack;
 
-    asptr_t brkbase;
-    size_t brksize;
+    struct TuxProc* proc;
 };
 
 int procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags, int fd, off_t offset);

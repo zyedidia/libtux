@@ -20,6 +20,6 @@ struct TuxProc;
 
 struct Tux* tux_new(struct Platform* plat, struct TuxOptions opts);
 
-struct TuxProc* tux_proc_newfile(struct Tux* tux, uint8_t* prog, size_t progsize, int argc, char** argv);
+struct TuxThread* tux_proc_newfile(struct Tux* tux, uint8_t* prog, size_t progsize, int argc, char** argv);
 
-uint64_t tux_proc_start(struct Tux* tux, struct TuxProc* p);
+uint64_t tux_proc_start(struct Tux* tux, struct TuxThread* p);

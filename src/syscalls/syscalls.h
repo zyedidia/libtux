@@ -55,7 +55,7 @@ procpath(struct TuxProc* p, asuserptr_t pathp)
 
 ssize_t sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size);
 
-uintptr_t sys_exit(struct TuxProc* p, int val);
+uintptr_t sys_exit(struct TuxThread* p, int val);
 
 uintptr_t sys_brk(struct TuxProc* p, asuserptr_t addr);
 
@@ -71,7 +71,7 @@ typedef int tux_clockid_t;
 
 int sys_clock_gettime(struct TuxProc* p, tux_clockid_t clockid, asuserptr_t tp);
 
-uintptr_t sys_exit_group(struct TuxProc* p, int code);
+uintptr_t sys_exit_group(struct TuxThread* p, int code);
 
 int sys_ioctl(struct TuxProc* p, int fd, unsigned long request, uintptr_t va0,
         uintptr_t va1, uintptr_t va2, uintptr_t va3);
