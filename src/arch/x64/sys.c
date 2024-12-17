@@ -68,6 +68,9 @@ arch_syshandle(struct PlatContext* ctx)
     case TUX_SYS_rename:
         regs->rax = sys_rename(proc, regs->rdi, regs->rsi);
         break;
+    case TUX_SYS_mkdir:
+        regs->rax = sys_mkdir(proc, regs->rdi, regs->rsi);
+        break;
     default:
         // Generic syscalls.
         regs->rax = syshandle(proc, regs->rax, regs->rdi, regs->rsi, regs->rdx,

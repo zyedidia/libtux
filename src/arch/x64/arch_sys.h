@@ -70,6 +70,7 @@ enum {
     TUX_SYS_clock_gettime      = 228,
     TUX_SYS_exit_group         = 231,
     TUX_SYS_openat             = 257,
+    TUX_SYS_mkdirat            = 258,
     TUX_SYS_newfstatat         = 262,
     TUX_SYS_unlinkat           = 263,
     TUX_SYS_renameat           = 264,

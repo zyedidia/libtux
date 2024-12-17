@@ -77,3 +77,5 @@ int host_faccessat2(struct HostFile* dir, const char* path, int mode, int flags)
 int host_getpath(struct HostFile* dir, char* buf, size_t size);
 
 bool host_isdir(struct HostFile* file);
+
+int host_mkdirat(struct HostFile* dir, const char* path, tux_mode_t mode);

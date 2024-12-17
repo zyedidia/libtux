@@ -325,6 +325,15 @@ host_isdir(struct HostFile* file)
     return false;
 }
 
+int
+host_mkdirat(struct HostFile* dir, const char* path, tux_mode_t mode)
+{
+    int r = mkdirat(dir ? dir->fd : AT_FDCWD, path, mode);
+    if (r < 0)
+        return tuxerr(errno);
+    return 0;
+}
+
 static struct HostFile fstdin  = { .fd = STDIN_FILENO };
 static struct HostFile fstdout = { .fd = STDOUT_FILENO };
 static struct HostFile fstderr = { .fd = STDERR_FILENO };

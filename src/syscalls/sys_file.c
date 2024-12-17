@@ -374,3 +374,21 @@ sys_access(struct TuxProc* p, uintptr_t pathp, int mode)
 {
     return sys_faccessat2(p, TUX_AT_FDCWD, pathp, mode, 0);
 }
+
+int
+sys_mkdirat(struct TuxProc* p, int dirfd, uintptr_t pathp, tux_mode_t mode)
+{
+    struct HostFile* dir = getfdir(p, dirfd);
+    if (dirfd != TUX_AT_FDCWD && !dir)
+        return -TUX_EBADF;
+    const char* path = procpath(p, pathp);
+    if (!path)
+        return -TUX_EFAULT;
+    return host_mkdirat(dir, path, mode);
+}
+
+int
+sys_mkdir(struct TuxProc* p, uintptr_t pathp, tux_mode_t mode)
+{
+    return sys_mkdirat(p, TUX_AT_FDCWD, pathp, mode);
+}

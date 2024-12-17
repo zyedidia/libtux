@@ -155,3 +155,7 @@ int sys_access(struct TuxProc* p, uintptr_t pathp, int mode);
 int sys_chdir(struct TuxProc* p, uintptr_t pathp);
 
 int sys_fchdir(struct TuxProc* p, int fd);
+
+int sys_mkdirat(struct TuxProc* p, int dirfd, uintptr_t pathp, tux_mode_t mode);
+
+int sys_mkdir(struct TuxProc* p, uintptr_t pathp, tux_mode_t mode);
