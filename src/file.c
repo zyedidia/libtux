@@ -19,13 +19,8 @@ validflags(int flags)
 }
 
 struct FDFile*
-filenew(struct Tux* tux, const char* dir, const char* path, int flags, int mode)
+filenew(struct Tux* tux, struct HostFile* dir, const char* path, int flags, int mode)
 {
-    char buffer[TUX_PATH_MAX];
-    if (!cwk_path_is_absolute(path)) {
-        cwk_path_join(dir, path, buffer, sizeof(buffer));
-        path = buffer;
-    }
     if (!validflags(flags))
         return NULL;
 
@@ -33,7 +28,7 @@ filenew(struct Tux* tux, const char* dir, const char* path, int flags, int mode)
     if ((flags & TUX_O_CLOEXEC) != 0)
         flags &= ~TUX_O_CLOEXEC;
 
-    struct HostFile* f = host_openat(NULL, path, flags, mode);
+    struct HostFile* f = host_openat(dir, path, flags, mode);
     if (!f)
         return NULL;
     return filefnew(f, fullflags);
@@ -109,7 +104,7 @@ filegetdents(void* dev, struct TuxProc* p, void* dirp, size_t count)
 }
 
 static struct HostFile*
-filemapfile(void* dev)
+filefile(void* dev)
 {
     return filef(dev);
 }
@@ -140,7 +135,7 @@ filefnew(struct HostFile* kfile, int flags)
         .chmod = filechmod,
         .sync = filesync,
         .getdents = filegetdents,
-        .mapfile = filemapfile,
+        .file = filefile,
     };
     return ff;
 err2:

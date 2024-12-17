@@ -196,9 +196,9 @@ procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd,
         struct FDFile* f = fdget(&p->fdtable, fd);
         if (!f)
             return -TUX_EBADF;
-        if (!f->mapfile)
+        if (!f->file)
             return -TUX_EACCES;
-        hf = f->mapfile(f->dev);
+        hf = f->file(f->dev);
     }
     asptr_t addr = pal_as_mapany(p->p_as, size, prot, flags, hf, offset);
     if (addr == (asptr_t) -1)
@@ -216,9 +216,9 @@ procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags,
         struct FDFile* f = fdget(&p->fdtable, fd);
         if (!f)
             return -TUX_EBADF;
-        if (!f->mapfile)
+        if (!f->file)
             return -TUX_EACCES;
-        hf = f->mapfile(f->dev);
+        hf = f->file(f->dev);
     }
     asptr_t addr = pal_as_mapat(p->p_as, start, size, prot, flags, hf, offset);
     if (addr == (asptr_t) -1)

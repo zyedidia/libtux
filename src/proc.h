@@ -32,7 +32,7 @@ struct FDFile {
     int     (*truncate)(void*, struct TuxProc*, off_t);
     int     (*sync)(void*, struct TuxProc*);
 
-    struct HostFile* (*mapfile)(void*);
+    struct HostFile* (*file)(void*);
 };
 
 struct FDTable {
@@ -40,8 +40,8 @@ struct FDTable {
 };
 
 struct Dir {
-    char name[TUX_PATH_MAX];
     struct HostFile* file;
+    struct FDFile* fd;
 };
 
 struct TuxProc {

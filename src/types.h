@@ -24,14 +24,15 @@ struct Dirent {
 };
 
 enum {
-    TUX_EPERM  = 1,
-    TUX_ENOENT = 2,
-    TUX_EBADF  = 9,
-    TUX_EACCES = 13,
-    TUX_EFAULT = 14,
-    TUX_EINVAL = 22,
-    TUX_EMFILE = 24,
-    TUX_ENOSYS = 38,
+    TUX_EPERM   = 1,
+    TUX_ENOENT  = 2,
+    TUX_EBADF   = 9,
+    TUX_EACCES  = 13,
+    TUX_EFAULT  = 14,
+    TUX_ENOTDIR = 20,
+    TUX_EINVAL  = 22,
+    TUX_EMFILE  = 24,
+    TUX_ENOSYS  = 38,
 };
 
 enum {
@@ -50,6 +51,7 @@ enum {
     TUX_O_NONBLOCK  = 0x800,
     TUX_O_DIRECTORY = 0x10000,
     TUX_O_CLOEXEC   = 0x80000,
+    TUX_O_PATH      = 0x200000,
 };
 
 enum {

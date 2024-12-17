@@ -8,6 +8,6 @@ host_time(void)
 {
     time_t r = time(NULL);
     if (r < 0)
-        return tuxerr(r);
+        return tuxerr(errno);
     return r;
 }

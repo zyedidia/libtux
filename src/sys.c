@@ -38,6 +38,8 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(ftruncate,         sys_ftruncate(proc, a0, a1))
     SYS(fchown,            sys_fchown(proc, a0, a1, a2))
     SYS(fsync,             sys_fsync(proc, a0))
+    SYS(chdir,             sys_chdir(proc, a0))
+    SYS(fchdir,            sys_fchdir(proc, a0))
     SYS(getrandom,         sys_getrandom(proc, a0, a1, a2))
     SYS(getcwd,            sys_getcwd(proc, a0, a1))
     SYS(clock_gettime,     sys_clock_gettime(proc, a0, a1))

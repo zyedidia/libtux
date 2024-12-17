@@ -258,7 +258,7 @@ host_fsync(struct HostFile* file)
 {
     int r = fsync(file->fd);
     if (r < 0)
-        return tuxerr(r);
+        return tuxerr(errno);
     return 0;
 }
 
@@ -273,7 +273,7 @@ host_unlinkat(struct HostFile* file, const char* path, int flags)
 {
     int r = unlinkat(file ? file->fd : AT_FDCWD, path, unlinkflags(flags));
     if (r < 0)
-        return tuxerr(r);
+        return tuxerr(errno);
     return 0;
 }
 
@@ -282,7 +282,7 @@ host_readlinkat(struct HostFile* file, const char* path, char* buf, size_t size)
 {
     ssize_t r = readlinkat(file ? file->fd : AT_FDCWD, path, buf, size);
     if (r < 0)
-        return tuxerr(r);
+        return tuxerr(errno);
     return r;
 }
 
@@ -293,7 +293,7 @@ host_renameat2(struct HostFile* olddir, const char* oldpath,
     assert(flags == 0);
     int r = renameat(olddir ? olddir->fd : AT_FDCWD, oldpath, newdir ? newdir->fd : AT_FDCWD, newpath);
     if (r < 0)
-        return tuxerr(r);
+        return tuxerr(errno);
     return 0;
 }
 
@@ -303,8 +303,26 @@ host_faccessat2(struct HostFile* dir, const char* path, int mode, int flags)
     assert(flags == 0);
     int r = faccessat(dir ? dir->fd : AT_FDCWD, path, mode, 0);
     if (r < 0)
-        return tuxerr(r);
+        return tuxerr(errno);
     return 0;
+}
+
+int
+host_getpath(struct HostFile* dir, char* buf, size_t size)
+{
+    assert(!"unimplemented");
+}
+
+bool
+host_isdir(struct HostFile* file)
+{
+    struct stat stat;
+    if (fstat(file->fd, &stat) == 0) {
+        if (S_ISDIR(stat.st_mode)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 static struct HostFile fstdin  = { .fd = STDIN_FILENO };

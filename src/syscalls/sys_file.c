@@ -9,6 +9,20 @@
 #include "fd.h"
 #include "host.h"
 
+static struct HostFile*
+getfdir(struct TuxProc* p, int dirfd)
+{
+    if (dirfd == TUX_AT_FDCWD)
+        return p->cwd.file;
+    struct FDFile* f = fdget(&p->fdtable, dirfd);
+    if (!f || !f->file)
+        return NULL;
+    struct HostFile* dir = f->file(f->dev);
+    if (!host_isdir(dir))
+        return NULL;
+    return dir;
+}
+
 ssize_t
 sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size)
 {
@@ -89,13 +103,14 @@ sys_readv(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt)
 int
 sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode)
 {
-    if (dirfd != TUX_AT_FDCWD)
+    struct HostFile* dir = getfdir(p, dirfd);
+    if (dirfd != TUX_AT_FDCWD && !dir)
         return -TUX_EBADF;
     // TODO: copy from user to avoid TOCTOU
     const char* path = procpath(p, pathp);
     if (!path)
         return -TUX_EFAULT;
-    struct FDFile* f = filenew(p->tux, p->cwd.name, path, flags, mode);
+    struct FDFile* f = filenew(p->tux, dir, path, flags, mode);
     if (!f) {
         VERBOSE(p->tux, "sys_open(\"%s\") = %d", path, -TUX_ENOENT);
         return -TUX_ENOENT;
@@ -123,13 +138,14 @@ sys_close(struct TuxProc* p, int fd)
 ssize_t
 sys_readlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t bufp, size_t size)
 {
-    if (dirfd != TUX_AT_FDCWD)
-        return -TUX_EINVAL;
+    struct HostFile* dir = getfdir(p, dirfd);
+    if (dirfd != TUX_AT_FDCWD && !dir)
+        return -TUX_EBADF;
     const char* path = procpath(p, pathp);
     uint8_t* buf = procbuf(p, bufp, size);
     if (!path || !buf)
         return -TUX_EFAULT;
-    int r = host_readlinkat(NULL, path, (char*) buf, size);
+    int r = host_readlinkat(dir, path, (char*) buf, size);
     if (r < 0)
         return -errno;
     return r;
@@ -170,9 +186,10 @@ sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t stat
         const char* path = procpath(p, pathp);
         if (!path)
             return -TUX_EFAULT;
-        if (dirfd != TUX_AT_FDCWD)
+        struct HostFile* dir = getfdir(p, dirfd);
+        if (dirfd != TUX_AT_FDCWD && !dir)
             return -TUX_EBADF;
-        return host_fstatat(p->cwd.file, path, stat, 0);
+        return host_fstatat(dir, path, stat, 0);
     }
     struct FDFile* f = fdget(&p->fdtable, dirfd);
     if (!f)
@@ -215,7 +232,11 @@ sys_truncate(struct TuxProc* p, uintptr_t pathp, off_t length)
         return -TUX_EFAULT;
     char buffer[TUX_PATH_MAX];
     if (!cwk_path_is_absolute(path)) {
-        cwk_path_join(p->cwd.name, path, buffer, sizeof(buffer));
+        char cwd[TUX_PATH_MAX];
+        int r;
+        if ((r = host_getpath(p->cwd.file, cwd, sizeof(cwd))) < 0)
+            return r;
+        cwk_path_join(cwd, path, buffer, sizeof(buffer));
         path = buffer;
     }
     return host_truncate(path, length);
@@ -272,20 +293,6 @@ sys_fchmod(struct TuxProc* p, int fd, tux_mode_t mode)
     return f->chmod(f->dev, p, mode);
 }
 
-uintptr_t
-sys_getcwd(struct TuxProc* p, uintptr_t bufp, size_t size)
-{
-    if (size == 0)
-        return 0;
-    uint8_t* buf = procbuf(p, bufp, size);
-    if (!buf)
-        return -TUX_EFAULT;
-    size = size < TUX_PATH_MAX ? size : TUX_PATH_MAX;
-    memcpy(buf, p->cwd.name, size < TUX_PATH_MAX ? size : TUX_PATH_MAX);
-    buf[size - 1] = 0;
-    return (uintptr_t) buf;
-}
-
 int
 sys_fsync(struct TuxProc* p, int fd)
 {
@@ -300,14 +307,15 @@ sys_fsync(struct TuxProc* p, int fd)
 int
 sys_unlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags)
 {
-    if (dirfd != TUX_AT_FDCWD)
-        return -TUX_EINVAL;
+    struct HostFile* dir = getfdir(p, dirfd);
+    if (dirfd != TUX_AT_FDCWD && !dir)
+        return -TUX_EBADF;
     if (flags != 0 && flags != TUX_AT_REMOVEDIR)
         return -TUX_EINVAL;
     const char* path = procpath(p, pathp);
     if (!path)
         return -TUX_EFAULT;
-    int r = host_unlinkat(NULL, path, flags);
+    int r = host_unlinkat(dir, path, flags);
     if (r < 0)
         return -errno;
     return r;
@@ -322,13 +330,15 @@ sys_unlink(struct TuxProc* p, asuserptr_t pathp)
 int
 sys_renameat(struct TuxProc* p, int olddir, uintptr_t oldpathp, int newdir, uintptr_t newpathp)
 {
-    if (olddir != TUX_AT_FDCWD || newdir != TUX_AT_FDCWD)
-        return -TUX_EINVAL;
+    struct HostFile* oldf = getfdir(p, olddir);
+    struct HostFile* newf = getfdir(p, newdir);
+    if ((olddir != TUX_AT_FDCWD && !oldf) || (newdir != TUX_AT_FDCWD && !newf))
+        return -TUX_EBADF;
     const char* oldpath = procpath(p, oldpathp);
     const char* newpath = procpath(p, newpathp);
     if (!oldpath || !newpath)
         return -TUX_EFAULT;
-    return host_renameat2(NULL, oldpath, NULL, newpath, 0);
+    return host_renameat2(oldf, oldpath, newf, newpath, 0);
 }
 
 int
@@ -340,8 +350,9 @@ sys_rename(struct TuxProc* p, uintptr_t oldpathp, uintptr_t newpathp)
 int
 sys_faccessat2(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode, int flags)
 {
-    if (dirfd != TUX_AT_FDCWD)
-        return -TUX_EINVAL;
+    struct HostFile* dir = getfdir(p, dirfd);
+    if (dirfd != TUX_AT_FDCWD && !dir)
+        return -TUX_EBADF;
     if (flags != 0) {
         WARN("faccessat2 used with non-zero flags");
         return -TUX_EINVAL;
@@ -349,7 +360,7 @@ sys_faccessat2(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode, int flag
     const char* path = procpath(p, pathp);
     if (!path)
         return -TUX_EFAULT;
-    return host_faccessat2(NULL, path, mode, 0);
+    return host_faccessat2(dir, path, mode, 0);
 }
 
 int

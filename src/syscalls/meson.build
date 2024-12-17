@@ -9,5 +9,6 @@ srcs += files(
   'sys_thread.c',
   'sys_signal.c',
   'sys_fcntl.c',
+  'sys_cwd.c',
   'strace.c',
 )

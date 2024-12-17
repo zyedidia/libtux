@@ -151,3 +151,7 @@ int sys_faccessat2(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode, int 
 int sys_faccessat(struct TuxProc* p, int dirfd, uintptr_t pathp, int mode);
 
 int sys_access(struct TuxProc* p, uintptr_t pathp, int mode);
+
+int sys_chdir(struct TuxProc* p, uintptr_t pathp);
+
+int sys_fchdir(struct TuxProc* p, int fd);
