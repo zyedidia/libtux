@@ -161,4 +161,4 @@ elfinterp(uint8_t* progdat, size_t progsz)
     return NULL;
 }
 
-bool elfload(struct TuxProc* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, struct ELFLoadInfo* o_info);
+bool elfload(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, struct ELFLoadInfo* o_info);
