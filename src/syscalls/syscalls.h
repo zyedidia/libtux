@@ -141,3 +141,7 @@ int sys_unlink(struct TuxProc* p, asuserptr_t pathp);
 
 int sys_fcntl(struct TuxProc* p, int fd, int cmd, uintptr_t va0, uintptr_t va1,
         uintptr_t va2, uintptr_t va3);
+
+int sys_renameat(struct TuxProc* p, int olddir, uintptr_t oldpath, int newdir, uintptr_t newpath);
+
+int sys_rename(struct TuxProc* p, uintptr_t oldpath, uintptr_t newpath);

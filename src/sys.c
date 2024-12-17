@@ -42,6 +42,7 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(getcwd,            sys_getcwd(proc, a0, a1))
     SYS(clock_gettime,     sys_clock_gettime(proc, a0, a1))
     SYS(unlinkat,          sys_unlinkat(proc, a0, a1, a2))
+    SYS(renameat,          sys_renameat(proc, a0, a1, a2, a3))
     SYS(ioctl,             sys_ioctl(proc, a0, a1, a2, a3, a4, a5))
     SYS(fcntl,             sys_fcntl(proc, a0, a1, a2, a3, a4, a5))
     SYS(futex,             sys_futex(proc, a0, a1, a2, a3, a4, a5))

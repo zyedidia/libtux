@@ -318,3 +318,21 @@ sys_unlink(struct TuxProc* p, asuserptr_t pathp)
 {
     return sys_unlinkat(p, TUX_AT_FDCWD, pathp, 0);
 }
+
+int
+sys_renameat(struct TuxProc* p, int olddir, uintptr_t oldpathp, int newdir, uintptr_t newpathp)
+{
+    if (olddir != TUX_AT_FDCWD || newdir != TUX_AT_FDCWD)
+        return -TUX_EINVAL;
+    const char* oldpath = procpath(p, oldpathp);
+    const char* newpath = procpath(p, newpathp);
+    if (!oldpath || !newpath)
+        return -TUX_EFAULT;
+    return host_renameat2(NULL, oldpath, NULL, newpath, 0);
+}
+
+int
+sys_rename(struct TuxProc* p, uintptr_t oldpathp, uintptr_t newpathp)
+{
+    return sys_renameat(p, TUX_AT_FDCWD, oldpathp, TUX_AT_FDCWD, newpathp);
+}

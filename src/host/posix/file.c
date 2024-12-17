@@ -286,6 +286,17 @@ host_readlinkat(struct HostFile* file, const char* path, char* buf, size_t size)
     return r;
 }
 
+int
+host_renameat2(struct HostFile* olddir, const char* oldpath,
+        struct HostFile* newdir, const char* newpath, int flags)
+{
+    assert(flags == 0);
+    int r = renameat(olddir ? olddir->fd : AT_FDCWD, oldpath, newdir ? newdir->fd : AT_FDCWD, newpath);
+    if (r < 0)
+        return tuxerr(r);
+    return 0;
+}
+
 static struct HostFile fstdin  = { .fd = STDIN_FILENO };
 static struct HostFile fstdout = { .fd = STDOUT_FILENO };
 static struct HostFile fstderr = { .fd = STDERR_FILENO };

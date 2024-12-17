@@ -68,3 +68,6 @@ int host_fsync(struct HostFile* file);
 int host_unlinkat(struct HostFile* file, const char* path, int flags);
 
 ssize_t host_readlinkat(struct HostFile* file, const char* path, char* buf, size_t size);
+
+int host_renameat2(struct HostFile* olddir, const char* oldpath,
+        struct HostFile* newdir, const char* newpath, int flags);
