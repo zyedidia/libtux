@@ -12,8 +12,8 @@
 	ldr REG_BASE, [REG_SYS, 8*N_RTCALLS+8]
 #else
 	mrs	REG_BASE, tpidr_el0
-	add	REG_BASE, REG_BASE, #:tprel_hi12:lfi_myproc, lsl #12
-	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:lfi_myproc
+	add	REG_BASE, REG_BASE, #:tprel_hi12:pal_myctx, lsl #12
+	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:pal_myctx
 	ldr	REG_BASE, [REG_BASE]
 #endif
 .endm
@@ -134,8 +134,8 @@ pal_get_tp:
 	ldr x0, [REG_SYS, 8*N_RTCALLS+8]
 #else
 	mrs	x0, tpidr_el0
-	add	x0, x0, #:tprel_hi12:lfi_myproc, lsl #12
-	add	x0, x0, #:tprel_lo12_nc:lfi_myproc
+	add	x0, x0, #:tprel_hi12:pal_myctx, lsl #12
+	add	x0, x0, #:tprel_lo12_nc:pal_myctx
 	ldr	x0, [x0]
 #endif
 	ldr x0, [x0, #8]
@@ -147,14 +147,16 @@ pal_get_tp:
 .global pal_set_tp
 pal_set_tp:
 #ifdef __APPLE__
-	ldr REG_TEMP, [REG_SYS, 8*N_RTCALLS+8]
+	ldr REG_BASE, [REG_SYS, N_RTCALLS*8+8]
 #else
-	mrs	REG_TEMP, tpidr_el0
-	add	REG_TEMP, REG_TEMP, #:tprel_hi12:pal_myctx, lsl #12
-	add	REG_TEMP, REG_TEMP, #:tprel_lo12_nc:pal_myctx
-	ldr	REG_TEMP, [REG_TEMP]
+	mrs	REG_BASE, tpidr_el0
+	add	REG_BASE, REG_BASE, #:tprel_hi12:pal_myctx, lsl #12
+	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:pal_myctx
+	ldr	REG_BASE, [REG_BASE]
 #endif
-	str x0, [REG_TEMP, #8]
+	str x0, [REG_BASE, #8]
+	// reload REG_BASE
+	ldr REG_BASE, [REG_BASE, PROC_REGS+REG_BASE_OFFSET]
 	add x30, REG_BASE, w30, uxtw
 	ret
 
@@ -162,7 +164,7 @@ pal_set_tp:
 .global pal_syscall_entry
 pal_syscall_entry:
 	SAVE_PARTIAL_REGS
-	// REG_BASE now contains Proc*
+	// REG_BASE now contains PlatContext*
 	ldr x1, [REG_BASE] // load stack
 	mov sp, x1
 	str REG_BASE, [sp, #-16]!

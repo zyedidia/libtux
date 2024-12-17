@@ -17,7 +17,7 @@ arch_syshandle(struct PlatContext* ctx)
     switch (regs->x8) {
     default:
         // Generic syscalls.
-        regs->x0 = syshandle(proc, regs->x0, regs->x1, regs->x2, regs->x3,
-                regs->x4, regs->x5, regs->x6);
+        regs->x0 = syshandle(proc, regs->x8, regs->x0, regs->x1, regs->x2,
+                regs->x3, regs->x4, regs->x5);
     }
 }
