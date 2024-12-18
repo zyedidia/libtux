@@ -208,6 +208,7 @@ procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd,
             return -TUX_EACCES;
         hf = f->file(f->dev);
     }
+    LOCK_WITH_DEFER(&p->lk_as, lk_as);
     asptr_t addr = pal_as_mapany(p->p_as, size, prot, flags, hf, offset);
     if (addr == (asptr_t) -1)
         return -TUX_EINVAL;
@@ -228,6 +229,7 @@ procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags,
             return -TUX_EACCES;
         hf = f->file(f->dev);
     }
+    LOCK_WITH_DEFER(&p->lk_as, lk_as);
     asptr_t addr = pal_as_mapat(p->p_as, start, size, prot, flags, hf, offset);
     if (addr == (asptr_t) -1)
         return -TUX_EINVAL;
@@ -237,6 +239,7 @@ procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags,
 int
 procunmap(struct TuxProc* p, asptr_t start, size_t size)
 {
+    LOCK_WITH_DEFER(&p->lk_as, lk_as);
     return pal_as_munmap(p->p_as, start, size);
 }
 

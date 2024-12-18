@@ -29,6 +29,8 @@ sys_chdir(struct TuxProc* p, uintptr_t pathp)
     if (p->cwd.fd) {
         fdrelease(p->cwd.fd, p);
         p->cwd.fd = NULL;
+    } else if (p->cwd.file) {
+        host_close(p->cwd.file);
     }
     p->cwd.file = file;
     return 0;
@@ -48,7 +50,15 @@ sys_fchdir(struct TuxProc* p, int fd)
     if (p->cwd.fd) {
         fdrelease(p->cwd.fd, p);
         p->cwd.fd = NULL;
+    } else if (p->cwd.file) {
+        host_close(p->cwd.file);
     }
+
+    {
+        LOCK_WITH_DEFER(&f->lk_refs, lk_refs);
+        f->refs++;
+    }
+
     p->cwd.fd = f;
     p->cwd.file = file;
     return 0;

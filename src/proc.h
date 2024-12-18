@@ -21,6 +21,7 @@ struct TuxProc;
 struct FDFile {
     void* dev;
     size_t refs;
+    pthread_mutex_t lk_refs;
 
     ssize_t (*read)(void*, struct TuxProc*, uint8_t*, size_t);
     ssize_t (*write)(void*, struct TuxProc*, uint8_t*, size_t);
@@ -38,11 +39,13 @@ struct FDFile {
 
 struct FDTable {
     struct FDFile* files[TUX_NOFILE];
+    pthread_mutex_t lk;
 };
 
 struct Dir {
     struct HostFile* file;
     struct FDFile* fd;
+    pthread_mutex_t lk;
 };
 
 struct TuxProc {
@@ -50,10 +53,10 @@ struct TuxProc {
     asptr_t brkbase;
     size_t brksize;
     pthread_mutex_t lk_as;
+    pthread_mutex_t lk_brk;
 
     struct FDTable fdtable;
     struct Dir cwd;
-    pthread_mutex_t lk_files;
 
     struct Tux* tux;
     struct TuxAddrSpaceInfo p_info;

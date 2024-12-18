@@ -7,6 +7,7 @@
 #include "print.h"
 #include "tux_pal.h"
 #include "proc.h"
+#include "thread.h"
 
 static inline asptr_t
 procaddr(struct TuxProc* p, asuserptr_t addr)
