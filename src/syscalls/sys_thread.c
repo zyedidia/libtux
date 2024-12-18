@@ -41,13 +41,15 @@ sys_clone(struct TuxProc* p, uint64_t flags, uint64_t stack, uint64_t ptid, uint
 int
 sys_sched_getaffinity(struct TuxProc* p, int32_t pid, uint64_t cpusetsize, int64_t maskaddr)
 {
-    assert(!"unimplemented: sched_getaffinity");
+    WARN("unimplemented: sched_getaffinity");
+    return 0;
 }
 
 int
 sys_sched_setaffinity(struct TuxProc* p, int32_t pid, uint64_t cpusetsize, int64_t maskaddr)
 {
-    assert(!"unimplemented: sched_setaffinity");
+    WARN("unimplemented: sched_setaffinity");
+    return 0;
 }
 
 int
