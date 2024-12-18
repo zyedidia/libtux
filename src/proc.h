@@ -66,6 +66,9 @@ struct TuxThread {
     struct PlatContext* p_ctx;
     asptr_t stack;
 
+    uintptr_t ctid;
+    int tid;
+
     struct TuxProc* proc;
 };
 

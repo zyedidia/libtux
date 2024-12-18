@@ -43,6 +43,7 @@ enum {
     TUX_EPERM   = 1,
     TUX_ENOENT  = 2,
     TUX_EBADF   = 9,
+    TUX_EAGAIN  = 11,
     TUX_EACCES  = 13,
     TUX_EFAULT  = 14,
     TUX_ENOTDIR = 20,
@@ -87,4 +88,25 @@ enum {
     TUX_FUTEX_WAIT_BITSET    = 9,
     TUX_FUTEX_PRIVATE_FLAG   = 128,
     TUX_FUTEX_CLOCK_REALTIME = 256,
+};
+
+enum {
+    TUX_CLONE_VM             = 0x100,
+    TUX_CLONE_FS             = 0x200,
+    TUX_CLONE_FILES          = 0x400,
+    TUX_CLONE_SIGHAND        = 0x800,
+    TUX_CLONE_VFORK          = 0x4000,
+    TUX_CLONE_THREAD         = 0x10000,
+    TUX_CLONE_SYSVSEM        = 0x40000,
+    TUX_CLONE_SETTLS         = 0x80000,
+    TUX_CLONE_PARENT_SETTID  = 0x100000,
+    TUX_CLONE_CHILD_CLEARTID = 0x200000,
+    TUX_CLONE_DETACHED       = 0x400000,
+    TUX_CLONE_CHILD_SETTID   = 0x1000000,
+};
+
+#define TUX_CLONE_IO           0x80000000UL
+
+enum {
+    TUX_SIGCHLD = 0x11,
 };

@@ -17,7 +17,7 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
 
     uintptr_t r = -TUX_ENOSYS;
     switch (sysno) {
-    SYS(gettid,            0)
+    SYS(gettid,            sys_gettid(p))
     SYS(getpid,            0)
     SYS(write,             sys_write(proc, a0, a1, a2))
     SYS(read,              sys_read(proc, a0, a1, a2))
@@ -64,7 +64,7 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(uname,             sys_uname(proc, a0))
     SYS(sysinfo,           sys_sysinfo(proc, a0))
     SYS(getrlimit,         sys_getrlimit(proc, a0, a1))
-    SYS(set_tid_address,   0)
+    SYS(set_tid_address,   sys_set_tid_address(p, a0))
     SYS(set_robust_list,   0)
     SYS(statx,             -TUX_ENOSYS)
     SYS(rseq,              -TUX_ENOSYS)
