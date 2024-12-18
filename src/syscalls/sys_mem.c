@@ -6,6 +6,8 @@
 uintptr_t
 sys_brk(struct TuxProc* p, asuserptr_t addr)
 {
+    LOCK_WITH_DEFER(&p->lk_brk, lk_brk);
+
     asptr_t brkp = p->brkbase + p->brksize;
     if (addr != 0)
         brkp = procaddr(p, addr);
@@ -24,6 +26,7 @@ sys_brk(struct TuxProc* p, asuserptr_t addr)
     const int mapprot = TUX_PROT_READ | TUX_PROT_WRITE;
 
     if (brkp >= p->brkbase + p->brksize) {
+        LOCK_WITH_DEFER(&p->lk_as, lk_as);
         asptr_t map;
         if (p->brksize == 0) {
             map = pal_as_mapat(p->p_as, p->brkbase, newsize, mapprot, mapflags, NULL, 0);
@@ -78,6 +81,7 @@ sys_mmap(struct TuxProc* p, asuserptr_t addrup, size_t length, int prot, int fla
 int
 sys_mprotect(struct TuxProc* p, asuserptr_t addrup, size_t length, int prot)
 {
+    LOCK_WITH_DEFER(&p->lk_as, lk_as);
     asptr_t addrp = procaddr(p, addrup);
     return pal_as_mprotect(p->p_as, addrp, length, prot);
 }

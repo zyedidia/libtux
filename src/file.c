@@ -137,6 +137,7 @@ filefnew(struct HostFile* kfile, int flags)
         .getdents = filegetdents,
         .file = filefile,
     };
+    pthread_mutex_init(&ff->lk_refs, NULL);
     return ff;
 err2:
     free(f);
