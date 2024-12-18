@@ -307,12 +307,6 @@ host_faccessat2(struct HostFile* dir, const char* path, int mode, int flags)
     return 0;
 }
 
-int
-host_getpath(struct HostFile* dir, char* buf, size_t size)
-{
-    assert(!"unimplemented");
-}
-
 bool
 host_isdir(struct HostFile* file)
 {

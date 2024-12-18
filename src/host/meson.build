@@ -3,6 +3,7 @@ if host == 'linux'
     'linux/random.c',
     'linux/dir.c',
     'linux/info.c',
+    'linux/path.c',
     'posix/file.c',
     'posix/thread.c',
     'posix/time.c',
@@ -14,5 +15,6 @@ elif host == 'posix'
     'posix/dir.c',
     'posix/thread.c',
     'posix/time.c',
+    'posix/path.c',
   )
 endif
