@@ -70,7 +70,7 @@ bool
 fdremove(struct FDTable* t, int fd, struct TuxProc* p)
 {
     LOCK_WITH_DEFER(&t->lk, lk);
-    return fdremove(t, fd, p);
+    return fdremove_x(t, fd, p);
 }
 
 bool
