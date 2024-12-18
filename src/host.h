@@ -79,3 +79,5 @@ int host_getpath(struct HostFile* dir, char* buf, size_t size);
 bool host_isdir(struct HostFile* file);
 
 int host_mkdirat(struct HostFile* dir, const char* path, tux_mode_t mode);
+
+int host_sysinfo(struct SysInfo* info);

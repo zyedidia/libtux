@@ -33,6 +33,7 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(munmap,            sys_munmap(proc, a0, a1))
     SYS(getdents64,        sys_getdents64(proc, a0, a1, a2))
     SYS(newfstatat,        sys_newfstatat(proc, a0, a1, a2, a3))
+    SYS(fstat,             sys_newfstatat(proc, a0, 0, a1, TUX_AT_EMPTY_PATH))
     SYS(fchmod,            sys_fchmod(proc, a0, a1))
     SYS(truncate,          sys_truncate(proc, a0, a1))
     SYS(ftruncate,         sys_ftruncate(proc, a0, a1))
@@ -47,6 +48,7 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(unlinkat,          sys_unlinkat(proc, a0, a1, a2))
     SYS(renameat,          sys_renameat(proc, a0, a1, a2, a3))
     SYS(faccessat,         sys_faccessat(proc, a0, a1, a2))
+    SYS(readlinkat,        sys_readlinkat(proc, a0, a1, a2, a3))
     SYS(ioctl,             sys_ioctl(proc, a0, a1, a2, a3, a4, a5))
     SYS(fcntl,             sys_fcntl(proc, a0, a1, a2, a3, a4, a5))
     SYS(futex,             sys_futex(proc, a0, a1, a2, a3, a4, a5))
@@ -57,9 +59,11 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(rt_sigaction,      sys_rt_sigaction(proc, a0, a1, a2, a3))
     SYS(rt_sigprocmask,    sys_rt_sigprocmask(proc, a0, a1, a2, a3))
     SYS(rt_sigreturn,      sys_rt_sigreturn(proc))
+    SYS(uname,             sys_uname(proc, a0))
+    SYS(sysinfo,           sys_sysinfo(proc, a0))
+    SYS(getrlimit,         sys_getrlimit(proc, a0, a1))
     SYS(set_tid_address,   0)
     SYS(set_robust_list,   0)
-    SYS(uname,             sys_uname(proc, a0))
     SYS(statx,             -TUX_ENOSYS)
     SYS(rseq,              -TUX_ENOSYS)
     SYS(prlimit64,         -TUX_ENOSYS)
@@ -67,6 +71,7 @@ syshandle(struct TuxProc* proc, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(getxattr,          -TUX_ENOSYS)
     SYS(lgetxattr,         -TUX_ENOSYS)
     SYS(socket,            -TUX_ENOSYS)
+    SYS(mremap,            -TUX_ENOSYS)
     default:
         fprintf(stderr, "unknown syscall: %ld (%s)\n", sysno, sysname(sysno));
         assert(!"unhandled syscall");

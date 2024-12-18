@@ -178,7 +178,7 @@ sys_pread64(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size, ssize_t of
 int
 sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t statbufp, int flags)
 {
-    uint8_t* statb = procbufalign(p, statbufp, sizeof(struct stat), alignof(struct stat));
+    uint8_t* statb = procbufalign(p, statbufp, sizeof(struct Stat), alignof(struct Stat));
     if (!statb)
         return -TUX_EFAULT;
     struct Stat* stat = (struct Stat*) statb;

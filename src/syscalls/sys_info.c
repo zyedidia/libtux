@@ -1,7 +1,7 @@
 #include <stdalign.h>
 
 #include "config.h"
-
+#include "host.h"
 #include "syscalls/syscalls.h"
 
 enum {
@@ -27,5 +27,22 @@ sys_uname(struct TuxProc* p, asuserptr_t bufp)
     strcpy(uts->release, LINUX_VERSION "-libtux");
     strcpy(uts->version, "0.0.0-unknown");
     strcpy(uts->machine, "x86_64");
+    return 0;
+}
+
+int
+sys_sysinfo(struct TuxProc* p, asuserptr_t infop)
+{
+    uint8_t* infob = procbufalign(p, infop, sizeof(struct SysInfo), alignof(struct SysInfo));
+    if (!infob)
+        return -TUX_EFAULT;
+    struct SysInfo* info = (struct SysInfo*) infob;
+    return host_sysinfo(info);
+}
+
+int
+sys_getrlimit(struct TuxProc* p, int resource, uintptr_t rlimp)
+{
+    WARN("getrlimit ignored");
     return 0;
 }
