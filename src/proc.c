@@ -9,7 +9,7 @@
 #include "fd.h"
 #include "buf.h"
 #include "proc.h"
-#include "elf.h"
+#include "tux_elf.h"
 
 #include "syscalls/syscalls.h"
 

@@ -14,7 +14,7 @@
 #include <errno.h>
 
 
-int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size) {
+int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t offset) {
     char output_file[256];
     snprintf(output_file, sizeof(output_file), "/tmp/perf-%d.map", getpid());
     FILE *out = fopen(output_file, "w");
@@ -50,7 +50,7 @@ int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size) {
         }
 
         // Look for symbol table sections
-        if (shdr.sh_type == SHT_SYMTAB || shdr.sh_type == SHT_DYNSYM) {
+        if (shdr.sh_type == SHT_SYMTAB) {
             Elf_Data *data = elf_getdata(scn, NULL);
             if (!data) {
                 fprintf(stderr, "elf_getdata failed: %s\n", elf_errmsg(-1));
@@ -72,8 +72,8 @@ int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size) {
                 }
 
                 // Write to perf map file
-                fprintf(out, "%lx %lx %s\n",
-                        (unsigned long)sym.st_value,
+                fprintf(out, "%016lx %08lx %s\n",
+                        (unsigned long)sym.st_value + offset,
                         (unsigned long)sym.st_size,
                         name);
             }
