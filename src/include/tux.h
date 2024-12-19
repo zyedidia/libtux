@@ -9,6 +9,7 @@ struct TuxOptions {
     size_t stacksize;
     bool verbose;
     bool strace;
+    bool perf;
 };
 
 struct Platform;

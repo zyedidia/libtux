@@ -4,7 +4,7 @@
 #include "print.h"
 #include "align.h"
 #include "buf.h"
-#include "elf.h"
+#include "tux_elf.h"
 #include "syscalls/syscalls.h"
 
 enum {
@@ -197,6 +197,12 @@ elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, 
     if (hasinterp)
         if (!load(p, interp, plast, &ifirst, &ilast, &ientry))
             goto err;
+
+
+    
+    int perf_output_jit_interface_file(uint8_t *, size_t, uintptr_t);
+    if (perf_output_jit_interface_file(progdat, progsz, pfirst))
+	goto err;
 
     struct FileHeader ehdr;
     ssize_t n = bufread(prog, &ehdr, sizeof(ehdr), 0);
