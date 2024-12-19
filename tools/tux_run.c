@@ -38,6 +38,7 @@ static char args_doc[] = "INPUT...";
 static struct argp_option options[] = {
     { "help",           'h',               0,      0, "show this message", -1 },
     { "verbose",        'V',               0,      0, "show verbose output", -1 },
+    { "perf",        	'p',             	   0,      0, "enable perf support", -1 },
     { "strace",         ARG_strace,        0,      0, "show system call trace", -1 },
     { "pagesize",       ARG_pagesize,      "SIZE", 0, "system page size", -1 },
     { 0 },
@@ -54,6 +55,9 @@ parse_opt(int key, char* arg, struct argp_state* state)
         break;
     case 'V':
         args->opts.verbose = true;
+        break;
+    case 'p':
+        args->opts.perf = true;
         break;
     case ARG_strace:
         args->opts.strace = true;
@@ -110,6 +114,12 @@ main(int argc, char** argv)
     if (!f.data) {
         fprintf(stderr, "error opening: %s: %s\n", args.inputs[0], strerror(errno));
         return 1;
+    }
+
+    int perf_output_jit_interface_file(uint8_t *, size_t);
+    if (args.opts.perf && perf_output_jit_interface_file(f.data,f.size)) {
+	fprintf(stderr, "error creating perf jit interface file\n");
+	return 1;
     }
 
     struct TuxProc* p = tux_proc_newfile(tux, f.data, f.size, args.ninputs, &args.inputs[0]);

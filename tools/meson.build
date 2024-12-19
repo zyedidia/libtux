@@ -1,6 +1,8 @@
+libelf = dependency('libelf', required: true)
+
 executable(
   'tux-run',
-  sources: files('tux_run.c'),
-  dependencies: [libtux_dep, libpal_lfi_dep, argp],
+  sources: ['tux_run.c', 'perf_support.c'],
+  dependencies: [libtux_dep, libpal_lfi_dep, argp, libelf],
   install: true,
 )
