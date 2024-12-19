@@ -15,30 +15,30 @@
 
 
 int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t offset) {
+
+    Elf *e = elf_memory((char *) buffer, file_size);
+    if (!e) {
+        fprintf(stderr, "elf_memory failed: %s\n", elf_errmsg(-1));
+        return 1;
+    }
+
     char output_file[256];
     snprintf(output_file, sizeof(output_file), "/tmp/perf-%d.map", getpid());
     FILE *out = fopen(output_file, "w");
     if (!out) {
         perror("fopen");
-        goto err_out;
+        goto err;
     }
-
-    Elf *e = elf_memory((char *) buffer, file_size);
 
     if (elf_version(EV_CURRENT) == EV_NONE) {
         fprintf(stderr, "ELF library initialization failed: %s\n", elf_errmsg(-1));
-        goto err_out;
-    }
-
-    if (!e) {
-        fprintf(stderr, "elf_memory failed: %s\n", elf_errmsg(-1));
-        goto err_out;
+        goto err;
     }
 
     size_t shstrndx;
     if (elf_getshdrstrndx(e, &shstrndx) != 0) {
         fprintf(stderr, "elf_getshdrstrndx failed: %s\n", elf_errmsg(-1));
-        goto err_out;
+        goto err;
     }
 
     Elf_Scn *scn = NULL;
@@ -46,7 +46,7 @@ int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t
         GElf_Shdr shdr;
         if (!gelf_getshdr(scn, &shdr)) {
             fprintf(stderr, "gelf_getshdr failed: %s\n", elf_errmsg(-1));
-	    goto err_out;
+	    goto err;
         }
 
         // Look for symbol table sections
@@ -54,7 +54,7 @@ int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t
             Elf_Data *data = elf_getdata(scn, NULL);
             if (!data) {
                 fprintf(stderr, "elf_getdata failed: %s\n", elf_errmsg(-1));
-		goto err_out;
+		goto err;
             }
 
             size_t num_symbols = shdr.sh_size / shdr.sh_entsize;
@@ -84,7 +84,7 @@ int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t
     fclose(out);
     printf("Perf map written to: %s\n", output_file);
     return 0;
-err_out:
+err:
     if (e) elf_end(e);
     if (out) fclose(out);
     return 1;
