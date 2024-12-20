@@ -1,19 +1,10 @@
 #ifdef HAVE_LIBELF
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <elf.h>
 #include <libelf.h>
 #include <gelf.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <pwd.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
-#include <errno.h>
 
 int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t offset) {
 
