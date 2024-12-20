@@ -16,5 +16,6 @@ elif host == 'posix'
     'posix/thread.c',
     'posix/time.c',
     'posix/path.c',
+    'posix/info.c',
   )
 endif

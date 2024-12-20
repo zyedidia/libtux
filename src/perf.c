@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <elf.h>
 #include <libelf.h>
 #include <gelf.h>
 

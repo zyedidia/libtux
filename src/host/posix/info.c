@@ -1,6 +1,3 @@
-#define _GNU_SOURCE
-#include <sys/sysinfo.h>
-
 #include "types.h"
 #include "host/error.h"
 
