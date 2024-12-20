@@ -72,10 +72,10 @@ procfile(struct TuxProc* p, uint8_t* prog, size_t progsz, int argc, char** argv)
                 return false;
             }
             VERBOSE(p->tux, "dynamic linker: %s", interppath);
-            free(interppath);
         } else {
             WARN("interpreter ignored because it is relative path: %s", interppath);
         }
+        free(interppath);
     }
 
     bool success = true;
