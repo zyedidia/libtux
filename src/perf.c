@@ -15,7 +15,6 @@
 #include <sys/syscall.h>
 #include <errno.h>
 
-
 int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t offset) {
 
     Elf *e = elf_memory((char *) buffer, file_size);
@@ -90,6 +89,19 @@ err:
     if (e) elf_end(e);
     if (out) fclose(out);
     return 1;
+}
+
+#else
+
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include "print.h"
+
+int perf_output_jit_interface_file(uint8_t * buffer, size_t file_size, uintptr_t offset) {
+    (void) buffer, (void) file_size, (void) offset;
+    WARN("perf support is disabled because libtux was built without libelf");
+    return 0;
 }
 
 #endif

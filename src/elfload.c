@@ -201,12 +201,8 @@ elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, 
             goto err;
 
     if (p->tux->opts.perf) {
-#ifdef HAVE_LIBELF
         if (perf_output_jit_interface_file(progdat, progsz, pfirst))
             goto err;
-#else
-        WARN("perf support is disabled because libtux was built without libelf");
-#endif
     }
 
     struct FileHeader ehdr;
