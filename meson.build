@@ -44,7 +44,7 @@ if cc.has_argument('-Wno-gnu-zero-variadic-macro-arguments') # suppress warnings
 endif
 
 if get_option('analyzer') and cc.has_argument('-fanalyzer')
-  add_project_arguments('-fanalyzer', language: 'c')
+  add_global_arguments('-fanalyzer', language: 'c')
 endif
 
 cpu = target_machine.cpu_family()
