@@ -1,3 +1,5 @@
+#ifdef HAVE_LIBELF
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -89,3 +91,5 @@ err:
     if (out) fclose(out);
     return 1;
 }
+
+#endif

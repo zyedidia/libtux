@@ -116,12 +116,6 @@ main(int argc, char** argv)
         return 1;
     }
 
-    /* int perf_output_jit_interface_file(uint8_t *, size_t); */
-    /* if (args.opts.perf && perf_output_jit_interface_file(f.data,f.size)) { */
-	/* fprintf(stderr, "error creating perf jit interface file\n"); */
-	/* return 1; */
-    /* } */
-
     struct TuxProc* p = tux_proc_newfile(tux, f.data, f.size, args.ninputs, &args.inputs[0]);
     if (!p) {
         fprintf(stderr, "error creating process\n");

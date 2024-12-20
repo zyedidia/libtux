@@ -2,11 +2,11 @@ srcs = files(
   'tux.c',
   'buf.c',
   'proc.c',
-  'elf.c',
+  'elfload.c',
   'sys.c',
   'file.c',
   'fd.c',
-  'perf_support.c',
+  'perf.c',
 )
 
 subdir('syscalls')
@@ -15,12 +15,17 @@ subdir('host')
 
 cwalk = subproject('cwalk')
 
-libelf = dependency('libelf', required: true)
+defs = []
+
+libelf = dependency('libelf', required: false)
+if libelf.found()
+  defs += '-DHAVE_LIBELF'
+endif
 
 libtux = static_library(
   'tux',
   srcs,
-  c_args: c_args_hardened + c_args_warnings,
+  c_args: c_args_hardened + c_args_warnings + defs,
   include_directories: include_directories('include', 'arch/' + cpuarch),
   dependencies: [cwalk.get_variable('cwalk_dep'), libelf],
   link_whole: cwalk.get_variable('libcwalk'),

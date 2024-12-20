@@ -4,7 +4,7 @@
 #include "print.h"
 #include "align.h"
 #include "buf.h"
-#include "tux_elf.h"
+#include "elfload.h"
 #include "syscalls/syscalls.h"
 
 enum {
@@ -170,6 +170,8 @@ err1:
     return false;
 }
 
+int perf_output_jit_interface_file(uint8_t*, size_t, uintptr_t);
+
 bool
 elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, size_t interpsz, struct ELFLoadInfo* o_info)
 {
@@ -198,11 +200,14 @@ elfload(struct TuxProc* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, 
         if (!load(p, interp, plast, &ifirst, &ilast, &ientry))
             goto err;
 
-
-    
-    int perf_output_jit_interface_file(uint8_t *, size_t, uintptr_t);
-    if (perf_output_jit_interface_file(progdat, progsz, pfirst))
-	goto err;
+    if (p->tux->opts.perf) {
+#ifdef HAVE_LIBELF
+        if (perf_output_jit_interface_file(progdat, progsz, pfirst))
+            goto err;
+#else
+        WARN("perf support is disabled because libtux was built without libelf");
+#endif
+    }
 
     struct FileHeader ehdr;
     ssize_t n = bufread(prog, &ehdr, sizeof(ehdr), 0);
