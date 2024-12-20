@@ -200,7 +200,7 @@ elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat
         if (!load(p->proc, interp, plast, &ifirst, &ilast, &ientry))
             goto err;
 
-    if (p->tux->opts.perf) {
+    if (p->proc->tux->opts.perf) {
         if (perf_output_jit_interface_file(progdat, progsz, pfirst))
             goto err;
     }
