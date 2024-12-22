@@ -81,6 +81,7 @@ enum {
     TUX_SYS_set_robust_list    = 273,
     TUX_SYS_prlimit64          = 302,
     TUX_SYS_getrandom          = 318,
+    TUX_SYS_membarrier         = 324,
     TUX_SYS_statx              = 332,
     TUX_SYS_rseq               = 334,
 

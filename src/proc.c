@@ -54,8 +54,7 @@ procnewthread(struct TuxThread* p)
     struct PlatContext* ctx = pal_ctx_new(p->proc->tux->plat, p->proc->p_as, newp, false);
     if (!ctx)
         goto err1;
-    p->p_ctx = ctx;
-
+    newp->p_ctx = ctx;
     newp->proc = p->proc;
     newp->tid = nexttid();
     *pal_ctx_regs(newp->p_ctx) = *pal_ctx_regs(p->p_ctx);

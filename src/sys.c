@@ -66,6 +66,7 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(getrlimit,         sys_getrlimit(proc, a0, a1))
     SYS(set_tid_address,   sys_set_tid_address(p, a0))
     SYS(set_robust_list,   0)
+    SYS(membarrier,        0)
     SYS(statx,             -TUX_ENOSYS)
     SYS(rseq,              -TUX_ENOSYS)
     SYS(prlimit64,         -TUX_ENOSYS)
