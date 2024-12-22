@@ -6,19 +6,20 @@
 #include "syscalls/syscalls.h"
 
 static long
-futexwait(struct TuxProc* p, asuserptr_t uaddrp, int op, uint32_t val, asuserptr_t timeoutp)
+futexwait(struct TuxThread* p, asuserptr_t uaddrp, int op, uint32_t val, asuserptr_t timeoutp)
 {
+    WARN("%d: futexwait", p->tid);
     assert(!"unimplemented: futexwait");
 }
 
 static long
-futexwake(struct TuxProc* p, asuserptr_t uaddrp, uint32_t val)
+futexwake(struct TuxThread* p, asuserptr_t uaddrp, uint32_t val)
 {
     assert(!"unimplemented: futexwake");
 }
 
 long
-sys_futex(struct TuxProc* p, asuserptr_t uaddrp, int op, uint32_t val,
+sys_futex(struct TuxThread* p, asuserptr_t uaddrp, int op, uint32_t val,
         uint64_t timeoutp, asuserptr_t uaddr2p, uint32_t val3)
 {
     if (uaddrp & 3)
@@ -97,13 +98,13 @@ spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint6
 
     struct TuxRegs* regs = pal_ctx_regs(p2->p_ctx);
     *regs_return(regs) = 0;
-    *regs_sp(regs) = stack;
+    *regs_sp(regs) = procaddr(p->proc, stack);
 
     pthread_t thread;
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    int err = pthread_create(&thread, &attr, threadspawn, NULL);
+    int err = pthread_create(&thread, &attr, threadspawn, p2);
     pthread_attr_destroy(&attr);
     if (err) {
         assert(!"unimplemented: free machine");

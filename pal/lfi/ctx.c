@@ -24,8 +24,8 @@ sysalloc(struct Platform* plat, uintptr_t base)
         if (!sys)
             return NULL;
     } else {
-        sys = mmap((void*) base, plat->opts.pagesize, PROT_READ | PROT_WRITE,
-                MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
+        sys = host_mmap((void*) base, plat->opts.pagesize, TUX_PROT_READ | TUX_PROT_WRITE,
+                TUX_MAP_PRIVATE | TUX_MAP_ANONYMOUS | TUX_MAP_FIXED, NULL, 0);
         if (sys == (void*) -1)
             return NULL;
     }
@@ -40,7 +40,7 @@ extern void pal_set_tp(void)
     asm ("pal_set_tp");
 
 static void
-syssetup(struct Sys* sys, struct PlatContext* ctx, uintptr_t base)
+syssetup(struct Platform* plat, struct Sys* sys, struct PlatContext* ctx, uintptr_t base)
 {
     sys->rtcalls[0] = (uintptr_t) &pal_syscall_entry;
     sys->rtcalls[1] = (uintptr_t) &pal_get_tp;
@@ -48,6 +48,8 @@ syssetup(struct Sys* sys, struct PlatContext* ctx, uintptr_t base)
     sys->base = base;
     // Only used in sysexternal mode (where there is a syspage per context)
     sys->ctx = (uintptr_t) ctx;
+    int err = host_mprotect((void*) base, plat->opts.pagesize, TUX_PROT_READ);
+    assert(err == 0);
 }
 
 struct PlatContext*
@@ -62,7 +64,7 @@ pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp, bool ma
         sys = sysalloc(plat, as->base);
         if (!sys)
             goto err;
-        syssetup(sys, ctx, as->base);
+        syssetup(plat, sys, ctx, as->base);
     } else {
         sys = (struct Sys*) as->base;
     }

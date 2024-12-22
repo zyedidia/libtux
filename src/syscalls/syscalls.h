@@ -114,7 +114,7 @@ ssize_t sys_getdents64(struct TuxProc* p, int fd, asuserptr_t dirp, size_t count
 
 off_t sys_lseek(struct TuxProc* p, int fd, off_t offset, int whence);
 
-long sys_futex(struct TuxProc* p, asuserptr_t uaddrp, int op, uint32_t val, uint64_t timeoutp, asuserptr_t uaddr2p, uint32_t val3);
+long sys_futex(struct TuxThread* p, asuserptr_t uaddrp, int op, uint32_t val, uint64_t timeoutp, asuserptr_t uaddr2p, uint32_t val3);
 
 int sys_clone(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptid, uint64_t ctid, uint64_t tls, uint64_t func);
 

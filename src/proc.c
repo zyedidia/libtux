@@ -22,7 +22,7 @@ static int
 nexttid(void)
 {
     // TODO: set a limit on the number of threads?
-    static _Atomic(int) tid = 0;
+    static _Atomic(int) tid = 10000;
     return atomic_fetch_add_explicit(&tid, 1, memory_order_relaxed);
 }
 
@@ -58,6 +58,8 @@ procnewthread(struct TuxThread* p)
     newp->proc = p->proc;
     newp->tid = nexttid();
     *pal_ctx_regs(newp->p_ctx) = *pal_ctx_regs(p->p_ctx);
+
+    // TODO: allocate stack?
 
     return newp;
 
