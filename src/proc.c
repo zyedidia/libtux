@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <stdatomic.h>
 
 #include "arch_regs.h"
 #include "cwalk.h"
@@ -17,6 +18,14 @@ static bool procsetup(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t
 static bool procfile(struct TuxThread* p, uint8_t* prog, size_t progsz, int argc, char** argv);
 static void procfree(struct TuxThread*);
 
+static int
+nexttid(void)
+{
+    // TODO: set a limit on the number of threads?
+    static _Atomic(int) tid = 0;
+    return atomic_fetch_add_explicit(&tid, 1, memory_order_relaxed);
+}
+
 static struct TuxThread*
 procnewempty(void)
 {
@@ -27,10 +36,35 @@ procnewempty(void)
     if (!p)
         goto err;
     p->proc = proc;
+    p->tid = nexttid();
     return p;
 
 err:
     free(proc);
+    return NULL;
+}
+
+struct TuxThread*
+procnewthread(struct TuxThread* p)
+{
+    struct TuxThread* newp = calloc(sizeof(struct TuxThread), 1);
+    if (!newp)
+        goto err;
+
+    struct PlatContext* ctx = pal_ctx_new(p->proc->tux->plat, p->proc->p_as, newp, false);
+    if (!ctx)
+        goto err1;
+    p->p_ctx = ctx;
+
+    newp->proc = p->proc;
+    newp->tid = nexttid();
+    *pal_ctx_regs(newp->p_ctx) = *pal_ctx_regs(p->p_ctx);
+
+    return newp;
+
+err1:
+    free(newp);
+err:
     return NULL;
 }
 
@@ -44,7 +78,7 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
     struct PlatAddrSpace* as = pal_as_new(tux->plat);
     if (!as)
         goto err1;
-    struct PlatContext* ctx = pal_ctx_new(tux->plat, as, p);
+    struct PlatContext* ctx = pal_ctx_new(tux->plat, as, p, true);
     if (!ctx)
         goto err2;
     p->proc->p_as = as;
@@ -250,7 +284,7 @@ procfree(struct TuxThread* p)
     // TODO: free p
 }
 
-struct TuxThread*
+EXPORT struct TuxThread*
 tux_proc_newfile(struct Tux* tux, uint8_t* prog, size_t progsz, int argc, char** argv)
 {
     return procnewfile(tux, prog, progsz, argc, argv);

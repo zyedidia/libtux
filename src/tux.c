@@ -9,7 +9,7 @@
 
 #include "arch_sys.h"
 
-struct Tux*
+EXPORT struct Tux*
 tux_new(struct Platform* plat, struct TuxOptions opts)
 {
     struct Tux* tux = malloc(sizeof(struct Tux));
@@ -45,7 +45,7 @@ err1:
     return NULL;
 }
 
-uint64_t
+EXPORT uint64_t
 tux_proc_start(struct Tux* tux, struct TuxThread* p)
 {
     return pal_ctx_run(p->p_ctx, p->proc->p_as);

@@ -77,3 +77,5 @@ int procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags
 int procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd, off_t offset, asptr_t* o_mapstart);
 
 int procunmap(struct TuxProc* p, asptr_t start, size_t size);
+
+struct TuxThread* procnewthread(struct TuxThread* p);

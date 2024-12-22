@@ -5,7 +5,19 @@ project(
   meson_version: '>=0.60.3',
 )
 
-add_project_arguments('-D_LARGEFILE64_SOURCE', '-D_FILE_OFFSET_BITS=64', '-Werror=implicit-function-declaration', language: 'c')
+add_global_arguments(
+  '-ffunction-sections',
+  '-fdata-sections',
+  '-fvisibility=hidden',
+  language: 'c'
+)
+
+add_project_arguments(
+  '-D_LARGEFILE64_SOURCE',
+  '-D_FILE_OFFSET_BITS=64',
+  '-Werror=implicit-function-declaration',
+  language: 'c'
+)
 
 # Enable various hardening flags
 cc = meson.get_compiler('c')

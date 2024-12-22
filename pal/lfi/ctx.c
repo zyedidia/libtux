@@ -46,20 +46,26 @@ syssetup(struct Sys* sys, struct PlatContext* ctx, uintptr_t base)
     sys->rtcalls[1] = (uintptr_t) &pal_get_tp;
     sys->rtcalls[2] = (uintptr_t) &pal_set_tp;
     sys->base = base;
+    // Only used in sysexternal mode (where there is a syspage per context)
     sys->ctx = (uintptr_t) ctx;
 }
 
 struct PlatContext*
-pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp)
+pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp, bool main)
 {
     struct PlatContext* ctx = malloc(sizeof(struct PlatContext));
     if (!ctx)
         return NULL;
 
-    struct Sys* sys = sysalloc(plat, as->base);
-    if (!sys)
-        goto err;
-    syssetup(sys, ctx, as->base);
+    struct Sys* sys;
+    if (main) {
+        sys = sysalloc(plat, as->base);
+        if (!sys)
+            goto err;
+        syssetup(sys, ctx, as->base);
+    } else {
+        sys = (struct Sys*) as->base;
+    }
 
     *ctx = (struct PlatContext) {
         .ctxp = ctxp,

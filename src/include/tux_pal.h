@@ -43,7 +43,7 @@ typedef void (*SysHandlerFn)(struct PlatContext* ctx);
 
 struct PlatAddrSpace*   pal_as_new(struct Platform* plat);
 struct TuxAddrSpaceInfo pal_as_info(struct PlatAddrSpace* as);
-struct PlatContext*     pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp);
+struct PlatContext*     pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp, bool main);
 
 asptr_t                 pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot, int flags, struct HostFile* f, off_t off);
 asptr_t                 pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags, struct HostFile* f, off_t off);

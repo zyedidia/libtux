@@ -26,7 +26,7 @@ libtux = static_library(
   'tux',
   srcs,
   c_args: c_args_hardened + c_args_warnings + defs,
-  include_directories: include_directories('include', 'arch/' + cpuarch),
+  include_directories: include_directories('include', 'arch/' + cpuarch, 'arch/'),
   dependencies: [cwalk.get_variable('cwalk_dep'), libelf],
   link_whole: cwalk.get_variable('libcwalk'),
   install: true,

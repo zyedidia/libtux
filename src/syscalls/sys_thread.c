@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdatomic.h>
 
+#include "arch_regs.h"
 #include "host.h"
 #include "syscalls/syscalls.h"
 
@@ -51,7 +52,7 @@ threadspawn(void* arg)
 }
 
 static int
-spawn(struct TuxProc* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint64_t ctidp, uint64_t tls, uint64_t func)
+spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint64_t ctidp, uint64_t tls, uint64_t func)
 {
     if ((flags & 0xff) != 0 && (flags & 0xff) != TUX_SIGCHLD) {
         WARN("unsupported clone signal: %x", (unsigned) flags & 0xff);
@@ -76,12 +77,13 @@ spawn(struct TuxProc* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint64_
     }
 
     // TODO: validate ctid and ptid for real
-    uint64_t* ctid = (uint64_t*) procaddr(p, ctidp);
-    uint64_t* ptid = (uint64_t*) procaddr(p, ptidp);
+    _Atomic(int)* ctid = (_Atomic(int)*) procaddr(p->proc, ctidp);
+    _Atomic(int)* ptid = (_Atomic(int)*) procaddr(p->proc, ptidp);
 
-    assert(!"unimplemented: clone body");
-
-    struct TuxThread* p2;
+    struct TuxThread* p2 = procnewthread(p);
+    if (!p2) {
+        return -TUX_EAGAIN;
+    }
 
     if (flags & TUX_CLONE_SETTLS) {
         pal_ctx_tpset(p2->p_ctx, tls);
@@ -93,7 +95,9 @@ spawn(struct TuxProc* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint64_
         atomic_store_explicit(ctid, p2->tid, memory_order_release);
     }
 
-    // TODO: set return value and sp to stack
+    struct TuxRegs* regs = pal_ctx_regs(p2->p_ctx);
+    *regs_return(regs) = 0;
+    *regs_sp(regs) = stack;
 
     pthread_t thread;
     pthread_attr_t attr;
@@ -112,7 +116,7 @@ spawn(struct TuxProc* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint64_
 }
 
 int
-sys_clone(struct TuxProc* p, uint64_t flags, uint64_t stack, uint64_t ptid, uint64_t ctid, uint64_t tls, uint64_t func)
+sys_clone(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptid, uint64_t ctid, uint64_t tls, uint64_t func)
 {
     if (isfork(flags)) {
         assert(!"unimplemented: fork or vfork");

@@ -54,7 +54,7 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(ioctl,             sys_ioctl(proc, a0, a1, a2, a3, a4, a5))
     SYS(fcntl,             sys_fcntl(proc, a0, a1, a2, a3, a4, a5))
     SYS(futex,             sys_futex(proc, a0, a1, a2, a3, a4, a5))
-    SYS(clone,             sys_clone(proc, a0, a1, a2, a3, a4, a5))
+    SYS(clone,             sys_clone(p, a0, a1, a2, a3, a4, a5))
     SYS(sched_getaffinity, sys_sched_getaffinity(proc, a0, a1, a2))
     SYS(sched_setaffinity, sys_sched_setaffinity(proc, a0, a1, a2))
     SYS(sched_yield,       sys_sched_yield(proc))
