@@ -4,6 +4,7 @@ if host == 'linux'
     'linux/dir.c',
     'linux/info.c',
     'linux/path.c',
+    'linux/futex.c',
     'posix/file.c',
     'posix/thread.c',
     'posix/time.c',

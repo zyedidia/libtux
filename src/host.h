@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "types.h"
+#include "proc.h"
 
 struct HostFile;
 
@@ -81,3 +82,7 @@ bool host_isdir(struct HostFile* file);
 int host_mkdirat(struct HostFile* dir, const char* path, tux_mode_t mode);
 
 int host_sysinfo(struct SysInfo* info);
+
+long host_futexwait(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val, struct TimeSpec* timeout);
+
+long host_futexwake(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val);

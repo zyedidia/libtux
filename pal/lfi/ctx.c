@@ -47,7 +47,8 @@ syssetup(struct Platform* plat, struct Sys* sys, struct PlatContext* ctx, uintpt
     sys->rtcalls[2] = (uintptr_t) &pal_set_tp;
     sys->base = base;
     // Only used in sysexternal mode (where there is a syspage per context)
-    sys->ctx = (uintptr_t) ctx;
+    if (plat->opts.sysexternal)
+        sys->ctx = (uintptr_t) ctx;
     int err = host_mprotect((void*) base, plat->opts.pagesize, TUX_PROT_READ);
     assert(err == 0);
 }
@@ -60,7 +61,7 @@ pal_ctx_new(struct Platform* plat, struct PlatAddrSpace* as, void* ctxp, bool ma
         return NULL;
 
     struct Sys* sys;
-    if (main) {
+    if (main || plat->opts.sysexternal) {
         sys = sysalloc(plat, as->base);
         if (!sys)
             goto err;
