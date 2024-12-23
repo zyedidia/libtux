@@ -12,10 +12,16 @@ lock(pthread_mutex_t* l)
 }
 
 static inline void
-unlock(pthread_mutex_t** l)
+unlock(pthread_mutex_t* l)
 {
-    int r = pthread_mutex_unlock(*l);
+    int r = pthread_mutex_unlock(l);
     assert(r == 0);
 }
 
-#define LOCK_WITH_DEFER(x, y) pthread_mutex_t* y __attribute__((cleanup(unlock))) = lock(x); (void) y;
+static inline void
+unlock_deferred(pthread_mutex_t** l)
+{
+    unlock(*l);
+}
+
+#define LOCK_WITH_DEFER(x, y) pthread_mutex_t* y __attribute__((cleanup(unlock_deferred))) = lock(x); (void) y;

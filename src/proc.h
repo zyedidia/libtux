@@ -9,6 +9,7 @@
 #include "tux_pal.h"
 
 #include "types.h"
+#include "futex.h"
 
 enum {
     TUX_PATH_MAX   = 4096,
@@ -57,6 +58,8 @@ struct TuxProc {
 
     struct FDTable fdtable;
     struct Dir cwd;
+
+    struct Futexes futexes;
 
     struct Tux* tux;
     struct TuxAddrSpaceInfo p_info;
