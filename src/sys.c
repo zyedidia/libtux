@@ -56,7 +56,14 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
 #ifdef CONFIG_THREADS
     SYS(gettid,            sys_gettid(p))
     SYS(futex,             sys_futex(p, a0, a1, a2, a3, a4, a5))
+# if defined(__x86_64__) || defined(_M_X64)
+    // syscall: clone(flags, stack, ptid, ctid, tls, func)
     SYS(clone,             sys_clone(p, a0, a1, a2, a3, a4, a5))
+# elif defined(__aarch64__) || defined(_M_ARM64)
+    // syscall: clone(flags, stack, ptid, tls, ctid, func)
+    // clone signature is different on aarch64 and x86-64
+    SYS(clone,             sys_clone(p, a0, a1, a2, a4, a3, a5))
+# endif
     SYS(sched_getaffinity, sys_sched_getaffinity(proc, a0, a1, a2))
     SYS(sched_setaffinity, sys_sched_setaffinity(proc, a0, a1, a2))
     SYS(sched_yield,       sys_sched_yield(proc))
@@ -81,6 +88,7 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(lgetxattr,         -TUX_ENOSYS)
     SYS(socket,            -TUX_ENOSYS)
     SYS(mremap,            -TUX_ENOSYS)
+    SYS(utimensat,         -TUX_ENOSYS)
     default:
         fprintf(stderr, "unknown syscall: %ld (%s)\n", sysno, sysname(sysno));
         assert(!"unhandled syscall");

@@ -2,6 +2,9 @@
 #include <stdatomic.h>
 #include <stdalign.h>
 
+#include <unistd.h>
+#include <sys/syscall.h>
+
 #include "arch_regs.h"
 #include "host.h"
 #include "futex.h"
@@ -96,6 +99,7 @@ spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint6
     }
 
     if (flags & TUX_CLONE_SETTLS) {
+        VERBOSE(p->proc->tux, "CLONE_SETTLS: %lx", tls);
         pal_ctx_tpset(p2->p_ctx, tls);
     }
     if (flags & TUX_CLONE_CHILD_CLEARTID) {
@@ -104,6 +108,8 @@ spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint6
     if (flags & TUX_CLONE_CHILD_SETTID) {
         atomic_store_explicit(ctid, p2->tid, memory_order_release);
     }
+
+    VERBOSE(p->proc->tux, "spawning thread %d", p2->tid);
 
     struct TuxRegs* regs = pal_ctx_regs(p2->p_ctx);
     *regs_return(regs) = 0;

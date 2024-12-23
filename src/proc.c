@@ -188,12 +188,14 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
     *av++ = (struct Auxv) { AT_PAGESZ, p->tux->opts.pagesize };
     *av++ = (struct Auxv) { AT_HWCAP, 0 };
     *av++ = (struct Auxv) { AT_HWCAP2, 0 };
-    *av++ = (struct Auxv) { AT_RANDOM, pal_as_p2user(p->p_as, p_argvp_start[0]) }; // TODO
+    *av++ = (struct Auxv) { AT_RANDOM, pal_as_p2user(p->p_as, p_argvp_start[0]) }; // TODO: AT_RANDOM
     *av++ = (struct Auxv) { AT_FLAGS, 0 };
     *av++ = (struct Auxv) { AT_UID, 1000 };
     *av++ = (struct Auxv) { AT_EUID, 1000 };
     *av++ = (struct Auxv) { AT_GID, 1000 };
     *av++ = (struct Auxv) { AT_EGID, 1000 };
+    *av++ = (struct Auxv) { AT_SYSINFO, 0 };
+    *av++ = (struct Auxv) { AT_SYSINFO_EHDR, 0 };
     *av++ = (struct Auxv) { AT_NULL, 0 };
 
     return true;
