@@ -1,3 +1,7 @@
+#include <assert.h>
+
+#include "syscalls/syscalls.h"
+#include "print.h"
 #include "futex.h"
 #include "proc.h"
 
@@ -18,7 +22,7 @@ futexnew(struct TuxProc* proc, uintptr_t addr)
 {
     struct List* e;
     if (!(e = list_first(proc->futexes.free))) {
-        WARN("futex count exceeds %d", N_FUTEX_MAX);
+        WARN("ran out of futexes");
         return NULL;
     }
     list_remove(&proc->futexes.free, e);
@@ -37,24 +41,20 @@ futexfree(struct TuxProc* proc, struct Futex* f)
 long
 host_futexwait(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val, uintptr_t timeoutp)
 {
-    op &= ~TUX_FUTEX_PRIVATE_FLAG;
-
     if (timeoutp) {
         assert(!"unimplemented: futexwait with timeout");
     }
-
-    uintptr_t uaddr = procaddr(p->proc, uaddrp);
 
     struct Futex* f;
     {
         LOCK_WITH_DEFER(&p->proc->futexes.lock, lk_futexes);
         // TODO: check that load(uaddrp) == val
-        if ((f = futexfind(p->proc, uaddr))) {
+        if ((f = futexfind(p->proc, (uintptr_t) uaddr))) {
             LOCK_WITH_DEFER(&f->lock, lk_f);
             f->waiters++;
         }
         if (!f) {
-            if ((f = futexnew(p->proc, uaddr))) {
+            if ((f = futexnew(p->proc, (uintptr_t) uaddr))) {
                 list_make_first(&p->proc->futexes.active, &f->elem);
             } else {
                 return -1;
@@ -62,7 +62,7 @@ host_futexwait(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val, uintp
         }
     }
 
-    VERBOSE(p->proc->tux, "tid=%d is waiting at address %lx", p->tid, uaddr);
+    VERBOSE(p->proc->tux, "tid=%d is waiting at address %p", p->tid, (void*) uaddr);
 
     /* do { */
     /*     LOCK_WITH_DEFER(&f->lock, lk_f); */
@@ -84,7 +84,5 @@ host_futexwait(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val, uintp
 long
 host_futexwake(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val)
 {
-    op &= ~TUX_FUTEX_PRIVATE_FLAG;
-
-    assert(!"unimplemented: posix futexwake")
+    assert(!"unimplemented: posix futexwake");
 }

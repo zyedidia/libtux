@@ -5,6 +5,8 @@
 #include "tux_pal.h"
 #include "platform.h"
 
+#define asm __asm__
+
 struct Platform*
 lfi_new_plat(size_t pagesize)
 {

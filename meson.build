@@ -48,9 +48,6 @@ c_args_warnings = []
 if cc.has_argument('-Wno-unused-parameter')
   c_args_warnings += '-Wno-unused-parameter'
 endif
-if cc.has_argument('-Wno-language-extension-token') # suppress warnings for asm ("name")
-  c_args_warnings += '-Wno-language-extension-token'
-endif
 if cc.has_argument('-Wno-gnu-zero-variadic-macro-arguments') # suppress warnings for ##__VA_ARGS__ in print macros
   c_args_warnings += '-Wno-gnu-zero-variadic-macro-arguments'
 endif
