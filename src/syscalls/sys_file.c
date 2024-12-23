@@ -127,6 +127,12 @@ sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode)
 }
 
 int
+sys_open(struct TuxProc* p, asuserptr_t pathp, int flags, int mode)
+{
+    return sys_openat(p, TUX_AT_FDCWD, pathp, flags, mode);
+}
+
+int
 sys_close(struct TuxProc* p, int fd)
 {
     bool ok = fdremove(&p->fdtable, fd, p);
@@ -197,6 +203,26 @@ sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t stat
     if (!f->stat_)
         return -TUX_EACCES;
     return f->stat_(f->dev, p, stat);
+}
+
+int
+sys_fstat(struct TuxProc* p, int fd, asuserptr_t statbufp)
+{
+    return sys_newfstatat(p, fd, 0, statbufp, TUX_AT_EMPTY_PATH);
+}
+
+
+int
+sys_stat(struct TuxProc* p, asuserptr_t pathp, asuserptr_t statbufp)
+{
+    return sys_newfstatat(p, TUX_AT_FDCWD, pathp, statbufp, 0);
+}
+
+int
+sys_lstat(struct TuxProc* p, asuserptr_t pathp, asuserptr_t statbufp)
+{
+    // TODO: lstat: handle links properly
+    return sys_stat(p, pathp, statbufp);
 }
 
 ssize_t

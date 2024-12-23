@@ -62,6 +62,8 @@ uintptr_t sys_brk(struct TuxProc* p, asuserptr_t addr);
 
 int sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode);
 
+int sys_open(struct TuxProc* p, asuserptr_t pathp, int flags, int mode);
+
 ssize_t sys_writev(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt);
 
 int sys_uname(struct TuxProc* p, asuserptr_t bufp);
@@ -97,6 +99,12 @@ ssize_t sys_readv(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt);
 ssize_t sys_pread64(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size, ssize_t offset);
 
 int sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t statbufp, int flags);
+
+int sys_fstat(struct TuxProc* p, int fd, asuserptr_t statbufp);
+
+int sys_stat(struct TuxProc* p, asuserptr_t pathp, asuserptr_t statbufp);
+
+int sys_lstat(struct TuxProc* p, asuserptr_t pathp, asuserptr_t statbufp);
 
 int sys_fchmod(struct TuxProc* p, int fd, tux_mode_t mode);
 

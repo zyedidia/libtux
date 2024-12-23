@@ -72,6 +72,15 @@ arch_syshandle(struct PlatContext* ctx)
     case TUX_SYS_mkdir:
         regs->rax = sys_mkdir(proc, regs->rdi, regs->rsi);
         break;
+    case TUX_SYS_open:
+        regs->rax = sys_open(proc, regs->rdi, regs->rsi, regs->rdx);
+        break;
+    case TUX_SYS_stat:
+        regs->rax = sys_stat(proc, regs->rdi, regs->rsi);
+        break;
+    case TUX_SYS_lstat:
+        regs->rax = sys_lstat(proc, regs->rdi, regs->rsi);
+        break;
     default:
         // Generic syscalls.
         regs->rax = syshandle(p, regs->rax, regs->rdi, regs->rsi, regs->rdx,

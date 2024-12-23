@@ -5,6 +5,7 @@
 enum {
     TUX_SYS_read               = 0,
     TUX_SYS_write              = 1,
+    TUX_SYS_open               = 2,
     TUX_SYS_close              = 3,
     TUX_SYS_stat               = 4,
     TUX_SYS_fstat              = 5,
@@ -79,6 +80,7 @@ enum {
     TUX_SYS_readlinkat         = 267,
     TUX_SYS_faccessat          = 269,
     TUX_SYS_set_robust_list    = 273,
+    TUX_SYS_utimensat          = 280,
     TUX_SYS_prlimit64          = 302,
     TUX_SYS_getrandom          = 318,
     TUX_SYS_membarrier         = 324,
