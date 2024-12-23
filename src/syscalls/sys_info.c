@@ -1,6 +1,6 @@
 #include <stdalign.h>
 
-#include "config.h"
+#include "version.h"
 #include "host.h"
 #include "syscalls/syscalls.h"
 

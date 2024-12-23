@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include <pthread.h>
 
+#include "config.h"
 #include "tux.h"
 #include "tux_pal.h"
-
 #include "types.h"
 #include "futex.h"
 
@@ -59,7 +59,9 @@ struct TuxProc {
     struct FDTable fdtable;
     struct Dir cwd;
 
+#ifdef CONFIG_THREADS
     struct Futexes futexes;
+#endif
 
     struct Tux* tux;
     struct TuxAddrSpaceInfo p_info;

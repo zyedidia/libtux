@@ -1,5 +1,6 @@
 #include <assert.h>
 
+#include "config.h"
 #include "sys.h"
 #include "syscalls/strace.h"
 #include "arch_sys.h"
@@ -17,7 +18,6 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
 
     uintptr_t r = -TUX_ENOSYS;
     switch (sysno) {
-    SYS(gettid,            sys_gettid(p))
     SYS(getpid,            0)
     SYS(write,             sys_write(proc, a0, a1, a2))
     SYS(read,              sys_read(proc, a0, a1, a2))
@@ -53,18 +53,24 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(readlinkat,        sys_readlinkat(proc, a0, a1, a2, a3))
     SYS(ioctl,             sys_ioctl(proc, a0, a1, a2, a3, a4, a5))
     SYS(fcntl,             sys_fcntl(proc, a0, a1, a2, a3, a4, a5))
+#ifdef CONFIG_THREADS
+    SYS(gettid,            sys_gettid(p))
     SYS(futex,             sys_futex(p, a0, a1, a2, a3, a4, a5))
     SYS(clone,             sys_clone(p, a0, a1, a2, a3, a4, a5))
     SYS(sched_getaffinity, sys_sched_getaffinity(proc, a0, a1, a2))
     SYS(sched_setaffinity, sys_sched_setaffinity(proc, a0, a1, a2))
     SYS(sched_yield,       sys_sched_yield(proc))
+    SYS(set_tid_address,   sys_set_tid_address(p, a0))
+#else
+    SYS(gettid,            0)
+    SYS(set_tid_address,   0)
+#endif
     SYS(rt_sigaction,      sys_rt_sigaction(proc, a0, a1, a2, a3))
     SYS(rt_sigprocmask,    sys_rt_sigprocmask(proc, a0, a1, a2, a3))
     SYS(rt_sigreturn,      sys_rt_sigreturn(proc))
     SYS(uname,             sys_uname(proc, a0))
     SYS(sysinfo,           sys_sysinfo(proc, a0))
     SYS(getrlimit,         sys_getrlimit(proc, a0, a1))
-    SYS(set_tid_address,   sys_set_tid_address(p, a0))
     SYS(set_robust_list,   0)
     SYS(membarrier,        0)
     SYS(statx,             -TUX_ENOSYS)

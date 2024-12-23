@@ -7,12 +7,14 @@
 static void
 clearctid(struct TuxThread* p)
 {
+#ifdef CONFIG_THREADS
     _Atomic(int)* ctid;
     if (p->ctid) {
         ctid = (_Atomic(int)*) procaddr(p->proc, p->ctid);
         atomic_store_explicit(ctid, 0, memory_order_seq_cst);
     }
     sys_futex(p, p->ctid, TUX_FUTEX_WAKE, INT_MAX, 0, 0, 0);
+#endif
 }
 
 uintptr_t

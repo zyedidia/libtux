@@ -6,9 +6,12 @@ srcs += files(
   'sys_mem.c',
   'sys_proc.c',
   'sys_random.c',
-  'sys_thread.c',
   'sys_signal.c',
   'sys_fcntl.c',
   'sys_cwd.c',
   'strace.c',
 )
+
+if get_option('threads')
+  srcs += files('sys_thread.c')
+endif

@@ -20,5 +20,5 @@ struct Futexes {
     struct List* active;
     struct List* free;
     pthread_mutex_t lock;
-    struct Futex mem[N_FUTEX_MAX];
+    struct Futex mem[CONFIG_MAX_FUTEX];
 };

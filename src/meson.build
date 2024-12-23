@@ -22,9 +22,17 @@ if libelf.found()
   defs += '-DHAVE_LIBELF'
 endif
 
+config_h = configure_file(
+  output: 'config.h',
+  configuration: {
+    'CONFIG_MAX_FUTEX': get_option('max_futex'),
+    'CONFIG_THREADS':   get_option('threads'),
+  }
+)
+
 libtux = static_library(
   'tux',
-  srcs,
+  sources: srcs + [config_h],
   c_args: c_args_hardened + c_args_warnings + defs,
   include_directories: include_directories('include', 'arch/' + cpuarch, 'arch/'),
   dependencies: [cwalk.get_variable('cwalk_dep'), libelf],
