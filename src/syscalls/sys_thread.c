@@ -101,7 +101,6 @@ spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint6
     }
 
     if (flags & TUX_CLONE_SETTLS) {
-        VERBOSE(p->proc->tux, "CLONE_SETTLS: %lx", tls);
         pal_ctx_tpset(p2->p_ctx, tls);
     }
     if (flags & TUX_CLONE_CHILD_CLEARTID) {
@@ -111,7 +110,7 @@ spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint6
         atomic_store_explicit(ctid, p2->tid, memory_order_release);
     }
 
-    VERBOSE(p->proc->tux, "spawning thread %d", p2->tid);
+    VERBOSE(p->proc->tux, "sys_clone(%lx, %lx, %lx, %lx, %lx) = %d", flags, stack, ptidp, ctidp, tls, p2->tid);
 
     struct TuxRegs* regs = pal_ctx_regs(p2->p_ctx);
     *regs_return(regs) = 0;
