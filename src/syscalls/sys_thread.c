@@ -13,9 +13,12 @@
 static long
 futexwait(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val, uintptr_t timeoutp)
 {
-    struct TimeSpec* timeout = (struct TimeSpec*) procbufalign(p->proc, timeoutp, sizeof(struct TimeSpec), alignof(struct TimeSpec));
-    if (!timeout)
-        return -TUX_EFAULT;
+    struct TimeSpec* timeout = NULL;
+    if (timeoutp) {
+        timeout = (struct TimeSpec*) procbufalign(p->proc, timeoutp, sizeof(struct TimeSpec), alignof(struct TimeSpec));
+        if (!timeout)
+            return -TUX_EFAULT;
+    }
 
     return host_futexwait(p, uaddr, op, val, timeout);
 }
@@ -37,7 +40,7 @@ sys_futex(struct TuxThread* p, asuserptr_t uaddrp, int op, uint32_t val,
     if (!uaddr)
         return -TUX_EFAULT;
 
-    switch (op) {
+    switch (op & ~TUX_FUTEX_PRIVATE_FLAG) {
     case TUX_FUTEX_WAIT:
         return futexwait(p, uaddr, op, val, timeoutp);
     case TUX_FUTEX_WAKE:
