@@ -86,3 +86,5 @@ int host_sysinfo(struct SysInfo* info);
 long host_futexwait(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val, struct TimeSpec* timeout);
 
 long host_futexwake(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val);
+
+unsigned host_cpucount(void);

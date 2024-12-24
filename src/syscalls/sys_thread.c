@@ -1,10 +1,9 @@
 #include <assert.h>
 #include <stdatomic.h>
 #include <stdalign.h>
+#include <stdlib.h>
 
-#include <unistd.h>
-#include <sys/syscall.h>
-
+#include "align.h"
 #include "arch_regs.h"
 #include "host.h"
 #include "futex.h"
@@ -146,8 +145,20 @@ sys_clone(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptid, ui
 int
 sys_sched_getaffinity(struct TuxProc* p, int32_t pid, uint64_t cpusetsize, int64_t maskaddr)
 {
-    WARN("unimplemented: sched_getaffinity");
-    return 0;
+    unsigned count = host_cpucount();
+    unsigned rc = ceilp(count, 64) / 8;
+    if (cpusetsize < rc)
+        return -TUX_EINVAL;
+    count = MIN(count, rc * 8);
+    uint8_t* mask = calloc(1, rc);
+    if (!mask)
+        return -TUX_ENOMEM;
+    for (unsigned i = 0; i < count; i++) {
+        mask[i / 8] |= 1 << (i % 8);
+    }
+    memcpy((void*) procaddr(p, maskaddr), mask, rc);
+    free(mask);
+    return rc;
 }
 
 int

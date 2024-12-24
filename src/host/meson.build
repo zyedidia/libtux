@@ -4,6 +4,7 @@ if host == 'linux'
     'linux/dir.c',
     'linux/info.c',
     'linux/path.c',
+    'linux/cpu.c',
     'posix/file.c',
     'posix/time.c',
   )
@@ -21,6 +22,7 @@ elif host == 'posix'
     'posix/time.c',
     'posix/path.c',
     'posix/info.c',
+    'posix/cpu.c',
   )
   if get_option('threads')
     srcs += files(

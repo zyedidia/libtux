@@ -46,6 +46,7 @@ enum {
     TUX_ENOENT  = 2,
     TUX_EBADF   = 9,
     TUX_EAGAIN  = 11,
+    TUX_ENOMEM  = 12,
     TUX_EACCES  = 13,
     TUX_EFAULT  = 14,
     TUX_ENOTDIR = 20,
