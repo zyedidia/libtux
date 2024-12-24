@@ -65,13 +65,13 @@ syshandle(struct TuxThread* p, uintptr_t sysno, uintptr_t a0, uintptr_t a1,
     SYS(clone,             sys_clone(p, a0, a1, a2, a4, a3, a5))
 # endif
     SYS(set_tid_address,   sys_set_tid_address(p, a0))
+    SYS(sched_getaffinity, sys_sched_getaffinity(proc, a0, a1, a2))
+    SYS(sched_setaffinity, sys_sched_setaffinity(proc, a0, a1, a2))
+    SYS(sched_yield,       sys_sched_yield(proc))
 #else
     SYS(gettid,            0)
     SYS(set_tid_address,   0)
 #endif
-    SYS(sched_getaffinity, sys_sched_getaffinity(proc, a0, a1, a2))
-    SYS(sched_setaffinity, sys_sched_setaffinity(proc, a0, a1, a2))
-    SYS(sched_yield,       sys_sched_yield(proc))
     SYS(rt_sigaction,      sys_rt_sigaction(proc, a0, a1, a2, a3))
     SYS(rt_sigprocmask,    sys_rt_sigprocmask(proc, a0, a1, a2, a3))
     SYS(rt_sigreturn,      sys_rt_sigreturn(proc))

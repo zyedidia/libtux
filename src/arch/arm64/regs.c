@@ -12,11 +12,11 @@ regs_init(struct TuxRegs* regs, asptr_t entry, asptr_t sp)
 uintptr_t*
 regs_return(struct TuxRegs* regs)
 {
-    return &regs->x0;
+    return (uintptr_t*) &regs->x0;
 }
 
 uintptr_t*
 regs_sp(struct TuxRegs* regs)
 {
-    return &regs->sp;
+    return (uintptr_t*) &regs->sp;
 }
