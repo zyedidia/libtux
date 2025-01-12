@@ -2,7 +2,7 @@
 #include "syscalls/syscalls.h"
 
 ssize_t
-sys_getrandom(struct TuxProc* p, asuserptr_t bufp, size_t buflen, unsigned int flags)
+sys_getrandom(struct TuxProc* p, lfiptr_t bufp, size_t buflen, unsigned int flags)
 {
     uint8_t* buf = procbuf(p, bufp, buflen);
     if (!buf)

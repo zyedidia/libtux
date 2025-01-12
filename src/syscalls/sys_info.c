@@ -17,7 +17,7 @@ struct UTSName {
 };
 
 int
-sys_uname(struct TuxProc* p, asuserptr_t bufp)
+sys_uname(struct TuxProc* p, lfiptr_t bufp)
 {
     uint8_t* utsb = procbufalign(p, bufp, sizeof(struct UTSName), alignof(struct UTSName));
     if (!utsb)
@@ -31,7 +31,7 @@ sys_uname(struct TuxProc* p, asuserptr_t bufp)
 }
 
 int
-sys_sysinfo(struct TuxProc* p, asuserptr_t infop)
+sys_sysinfo(struct TuxProc* p, lfiptr_t infop)
 {
     uint8_t* infob = procbufalign(p, infop, sizeof(struct SysInfo), alignof(struct SysInfo));
     if (!infob)

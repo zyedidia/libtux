@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tux_pal.h"
+#include "lfi.h"
 
 enum {
     TUX_SYS_read               = 0,
@@ -91,4 +91,4 @@ enum {
     TUX_SYS_ntotal             = 335,
 };
 
-void arch_syshandle(struct PlatContext* ctx);
+void arch_syshandle(struct LFIContext* ctx);

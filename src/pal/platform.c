@@ -2,19 +2,19 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "tux_pal.h"
+#include "lfi.h"
 #include "platform.h"
 
 #define asm __asm__
 
-struct Platform*
+struct LFIPlatform*
 lfi_new_plat(size_t pagesize)
 {
     struct PlatOptions opts = (struct PlatOptions) {
         .pagesize = pagesize,
         .vmsize = gb(4),
     };
-    struct Platform* plat = malloc(sizeof(struct Platform));
+    struct LFIPlatform* plat = malloc(sizeof(struct LFIPlatform));
     if (!plat)
         return NULL;
 
@@ -28,7 +28,7 @@ lfi_new_plat(size_t pagesize)
     if (!boxmap_reserve(bm, gb(256)))
         goto err2;
 
-    *plat = (struct Platform) {
+    *plat = (struct LFIPlatform) {
         .bm = bm,
         .opts = opts,
     };
@@ -42,16 +42,16 @@ err1:
 }
 
 void
-pal_sys_handler(struct Platform* plat, SysHandlerFn fn)
+lfi_sys_handler(struct LFIPlatform* plat, SysHandlerFn fn)
 {
     plat->syshandler = fn;
 }
 
-void pal_syscall_handler(struct PlatContext* ctx)
-    asm ("pal_syscall_handler");
+void lfi_syscall_handler(struct LFIContext* ctx)
+    asm ("lfi_syscall_handler");
 
 void
-pal_syscall_handler(struct PlatContext* ctx)
+lfi_syscall_handler(struct LFIContext* ctx)
 {
     assert(ctx->plat->syshandler && "platform does not have a system call handler");
     ctx->plat->syshandler(ctx);

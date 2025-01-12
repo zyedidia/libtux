@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "tux_pal.h"
+#include "lfi.h"
 #include "sys.h"
 #include "syscalls/strace.h"
 #include "syscalls/syscalls.h"
@@ -13,11 +13,11 @@ enum {
 };
 
 static int
-sys_arch_prctl(struct TuxThread* p, int code, asuserptr_t addr)
+sys_arch_prctl(struct TuxThread* p, int code, lfiptr_t addr)
 {
     switch (code) {
     case TUX_ARCH_SET_FS:
-        pal_ctx_tpset(p->p_ctx, procaddr(p->proc, addr));
+        lfi_ctx_tpset(p->p_ctx, procaddr(p->proc, addr));
         return 0;
     default:
         return -TUX_EINVAL;
@@ -36,11 +36,11 @@ arch_sysname(uint64_t sysno)
 }
 
 void
-arch_syshandle(struct PlatContext* ctx)
+arch_syshandle(struct LFIContext* ctx)
 {
-    struct TuxThread* p = (struct TuxThread*) pal_ctx_data(ctx);
+    struct TuxThread* p = (struct TuxThread*) lfi_ctx_data(ctx);
     struct TuxProc* proc = p->proc;
-    struct TuxRegs* regs = pal_ctx_regs(ctx);
+    struct TuxRegs* regs = lfi_ctx_regs(ctx);
 
     uint64_t orig_rax = regs->rax;
 

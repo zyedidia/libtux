@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tux_pal.h"
+#include "lfi.h"
 #include "proc.h"
 #include "syscalls/syscalls.h"
 

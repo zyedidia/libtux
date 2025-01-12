@@ -1,4 +1,4 @@
-#include "arch/arm64/regs.h"
+#include "pal/arch/arm64/regs.h"
 
 #define N_RTCALLS 256
 #define PROC_REGS 16
@@ -12,8 +12,8 @@
 	ldr REG_BASE, [REG_SYS, 8*N_RTCALLS+8]
 #else
 	mrs	REG_BASE, tpidr_el0
-	add	REG_BASE, REG_BASE, #:tprel_hi12:pal_myctx, lsl #12
-	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:pal_myctx
+	add	REG_BASE, REG_BASE, #:tprel_hi12:lfi_myctx, lsl #12
+	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:lfi_myctx
 	ldr	REG_BASE, [REG_BASE]
 #endif
 .endm
@@ -36,10 +36,10 @@
 	// TODO: save SIMD registers
 .endm
 
-// pal_ctx_entry(PlatContext* ctx, void** kstackp)
+// lfi_ctx_entry(LFIContext* ctx, void** kstackp)
 .p2align 4
-.global pal_ctx_entry
-pal_ctx_entry:
+.global lfi_ctx_entry
+lfi_ctx_entry:
 	// save callee-saved registers to stack
 	stp d8, d9,   [sp, #-16]!
 	stp d10, d11, [sp, #-16]!
@@ -54,11 +54,11 @@ pal_ctx_entry:
 	// save stack to kstackp
 	mov x2, sp
 	str x2, [x1]
-	b pal_restore_regs
+	b lfi_restore_regs
 	brk #0
 
 .p2align 4
-pal_restore_regs:
+lfi_restore_regs:
 	ldp x2, x3,   [x0, PROC_REGS+16*1]
 	ldp x4, x5,   [x0, PROC_REGS+16*2]
 	ldp x6, x7,   [x0, PROC_REGS+16*3]
@@ -108,10 +108,10 @@ pal_restore_regs:
 	// NOTE: x30 must contain a valid sandbox address
 	ret
 
-// pal_asm_ctx_exit(void* kstackp, uint64_t code)
+// lfi_asm_ctx_exit(void* kstackp, uint64_t code)
 .p2align 4
-.global pal_asm_ctx_exit
-pal_asm_ctx_exit:
+.global lfi_asm_ctx_exit
+lfi_asm_ctx_exit:
 	mov sp, x0
 	mov x0, x1
 	ldp x29, x30, [sp], 16
@@ -128,14 +128,14 @@ pal_asm_ctx_exit:
 
 // Puts the sandbox's thread pointer in x0.
 .p2align 4
-.global pal_get_tp
-pal_get_tp:
+.global lfi_get_tp
+lfi_get_tp:
 #ifdef __APPLE__
 	ldr x0, [REG_SYS, 8*N_RTCALLS+8]
 #else
 	mrs	x0, tpidr_el0
-	add	x0, x0, #:tprel_hi12:pal_myctx, lsl #12
-	add	x0, x0, #:tprel_lo12_nc:pal_myctx
+	add	x0, x0, #:tprel_hi12:lfi_myctx, lsl #12
+	add	x0, x0, #:tprel_lo12_nc:lfi_myctx
 	ldr	x0, [x0]
 #endif
 	ldr x0, [x0, #8]
@@ -144,14 +144,14 @@ pal_get_tp:
 
 // Sets the sandbox's thread pointer to x0 and clobbers REG_TEMP.
 .p2align 4
-.global pal_set_tp
-pal_set_tp:
+.global lfi_set_tp
+lfi_set_tp:
 #ifdef __APPLE__
 	ldr REG_BASE, [REG_SYS, N_RTCALLS*8+8]
 #else
 	mrs	REG_BASE, tpidr_el0
-	add	REG_BASE, REG_BASE, #:tprel_hi12:pal_myctx, lsl #12
-	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:pal_myctx
+	add	REG_BASE, REG_BASE, #:tprel_hi12:lfi_myctx, lsl #12
+	add	REG_BASE, REG_BASE, #:tprel_lo12_nc:lfi_myctx
 	ldr	REG_BASE, [REG_BASE]
 #endif
 	str x0, [REG_BASE, #8]
@@ -161,19 +161,19 @@ pal_set_tp:
 	ret
 
 .p2align 4
-.global pal_syscall_entry
-pal_syscall_entry:
+.global lfi_syscall_entry
+lfi_syscall_entry:
 	SAVE_PARTIAL_REGS
-	// REG_BASE now contains PlatContext*
+	// REG_BASE now contains LFIContext*
 	ldr x1, [REG_BASE] // load stack
 	mov sp, x1
 	str REG_BASE, [sp, #-16]!
 	mov x0, REG_BASE
-	bl pal_syscall_handler
+	bl lfi_syscall_handler
 	ldr x0, [sp], 16
 // Restore only caller-saved registers.
-.globl pal_restore_partial_regs
-pal_restore_partial_regs:
+.globl lfi_restore_partial_regs
+lfi_restore_partial_regs:
 	ldp x2, x3,   [x0, PROC_REGS+16*1]
 	ldp x4, x5,   [x0, PROC_REGS+16*2]
 	ldp x6, x7,   [x0, PROC_REGS+16*3]

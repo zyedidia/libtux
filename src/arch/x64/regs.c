@@ -3,7 +3,7 @@
 #include "arch_regs.h"
 
 void
-regs_init(struct TuxRegs* regs, asptr_t entry, asptr_t sp)
+regs_init(struct TuxRegs* regs, lfiptr_t entry, lfiptr_t sp)
 {
     regs->rsp = sp;
     // Assumes pal_ctx_entry will jump to %r11

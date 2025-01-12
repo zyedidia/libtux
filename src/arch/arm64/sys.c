@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "tux_pal.h"
+#include "lfi.h"
 #include "sys.h"
 #include "syscalls/strace.h"
 #include "syscalls/syscalls.h"
@@ -9,10 +9,10 @@
 #include "arch_sys.h"
 
 void
-arch_syshandle(struct PlatContext* ctx)
+arch_syshandle(struct LFIContext* ctx)
 {
-    struct TuxThread* p = (struct TuxThread*) pal_ctx_data(ctx);
-    struct TuxRegs* regs = pal_ctx_regs(ctx);
+    struct TuxThread* p = (struct TuxThread*) lfi_ctx_data(ctx);
+    struct TuxRegs* regs = lfi_ctx_regs(ctx);
 
     switch (regs->x8) {
     default:

@@ -29,8 +29,8 @@ futexwake(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val)
 }
 
 long
-sys_futex(struct TuxThread* p, asuserptr_t uaddrp, int op, uint32_t val,
-        uint64_t timeoutp, asuserptr_t uaddr2p, uint32_t val3)
+sys_futex(struct TuxThread* p, lfiptr_t uaddrp, int op, uint32_t val,
+        uint64_t timeoutp, lfiptr_t uaddr2p, uint32_t val3)
 {
     if (uaddrp & 3)
         return -TUX_EFAULT;
@@ -61,7 +61,7 @@ static void*
 threadspawn(void* arg)
 {
     struct TuxThread* p = (struct TuxThread*) arg;
-    tux_proc_start(p->proc->tux, p);
+    lfi_tux_proc_run(p->proc->tux, p);
     VERBOSE(p->proc->tux, "thread %d exited", p->tid);
     return NULL;
 }
@@ -101,7 +101,7 @@ spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint6
     }
 
     if (flags & TUX_CLONE_SETTLS) {
-        pal_ctx_tpset(p2->p_ctx, tls);
+        lfi_ctx_tpset(p2->p_ctx, tls);
     }
     if (flags & TUX_CLONE_CHILD_CLEARTID) {
         p2->ctid = ctidp;
@@ -112,7 +112,7 @@ spawn(struct TuxThread* p, uint64_t flags, uint64_t stack, uint64_t ptidp, uint6
 
     VERBOSE(p->proc->tux, "sys_clone(%lx, %lx, %lx, %lx, %lx) = %d", flags, stack, ptidp, ctidp, tls, p2->tid);
 
-    struct TuxRegs* regs = pal_ctx_regs(p2->p_ctx);
+    struct TuxRegs* regs = lfi_ctx_regs(p2->p_ctx);
     *regs_return(regs) = 0;
     *regs_sp(regs) = procaddr(p->proc, stack);
 

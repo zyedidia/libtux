@@ -4,9 +4,10 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-#include "tux_pal.h"
+#include "lfi.h"
 #include "boxmap.h"
 #include "platform.h"
+#include "host.h"
 
 static size_t
 guardsize(void)
@@ -14,10 +15,10 @@ guardsize(void)
     return 80 * 1024;
 }
 
-struct PlatAddrSpace*
-pal_as_new(struct Platform* plat)
+struct LFIAddrSpace*
+lfi_as_new(struct LFIPlatform* plat)
 {
-    struct PlatAddrSpace* as = malloc(sizeof(struct PlatAddrSpace));
+    struct LFIAddrSpace* as = malloc(sizeof(struct LFIAddrSpace));
     if (!as)
         return NULL;
     size_t size = plat->opts.vmsize;
@@ -25,7 +26,7 @@ pal_as_new(struct Platform* plat)
     if (base == 0)
         goto err1;
 
-    *as = (struct PlatAddrSpace) {
+    *as = (struct LFIAddrSpace) {
         .base = base,
         .size = size,
         .minaddr = base + guardsize() + plat->opts.pagesize, // for sys page
@@ -44,10 +45,10 @@ err1:
     return NULL;
 }
 
-struct TuxAddrSpaceInfo
-pal_as_info(struct PlatAddrSpace* as)
+struct LFIAddrSpaceInfo
+lfi_as_info(struct LFIAddrSpace* as)
 {
-    return (struct TuxAddrSpaceInfo) {
+    return (struct LFIAddrSpaceInfo) {
         .base = as->base,
         .size = as->size,
         .minaddr = as->minaddr,
@@ -56,7 +57,7 @@ pal_as_info(struct PlatAddrSpace* as)
 }
 
 static int
-asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot,
+asmap(struct LFIAddrSpace* as, uintptr_t start, size_t size, int prot,
         int flags, struct HostFile* hf, off_t off)
 {
     // TODO: verify
@@ -66,17 +67,17 @@ asmap(struct PlatAddrSpace* as, uintptr_t start, size_t size, int prot,
     return 0;
 }
 
-asptr_t
-pal_as_mapany(struct PlatAddrSpace* as, size_t size, int prot, int flags,
+lfiptr_t
+lfi_as_mapany(struct LFIAddrSpace* as, size_t size, int prot, int flags,
         struct HostFile* hf, off_t off)
 {
-    asptr_t addr = mm_mapany(&as->mm, size, prot, flags, hf, off);
-    if (addr == (asptr_t) -1)
+    lfiptr_t addr = mm_mapany(&as->mm, size, prot, flags, hf, off);
+    if (addr == (lfiptr_t) -1)
         return 0;
     int r = asmap(as, addr, size, prot, flags, hf, off);
     if (r < 0) {
         mm_unmap(&as->mm, addr, size);
-        return (asptr_t) -1;
+        return (lfiptr_t) -1;
     }
     return addr;
 }
@@ -85,30 +86,30 @@ static void
 cbunmap(uint64_t start, size_t len, MMInfo info, void* udata)
 {
     (void) udata, (void) info;
-    void* p = host_mmap((void*) start, len, TUX_PROT_NONE, TUX_MAP_ANONYMOUS |
-            TUX_MAP_PRIVATE | TUX_MAP_FIXED, NULL, 0);
+    void* p = host_mmap((void*) start, len, LFI_PROT_NONE, LFI_MAP_ANONYMOUS |
+            LFI_MAP_PRIVATE | LFI_MAP_FIXED, NULL, 0);
     assert(p == (void*) start);
 }
 
-asptr_t
-pal_as_mapat(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot,
+lfiptr_t
+lfi_as_mapat(struct LFIAddrSpace* as, lfiptr_t addr, size_t size, int prot,
         int flags, struct HostFile* hf, off_t off)
 {
     assert(addr >= as->minaddr && addr + size <= as->maxaddr);
 
-    addr = (asptr_t) mm_mapat_cb(&as->mm, addr, size, prot, flags, hf, off, cbunmap, NULL);
-    if (addr == (asptr_t) -1)
-        return (asptr_t) -1; 
+    addr = (lfiptr_t) mm_mapat_cb(&as->mm, addr, size, prot, flags, hf, off, cbunmap, NULL);
+    if (addr == (lfiptr_t) -1)
+        return (lfiptr_t) -1; 
     int r = asmap(as, addr, size, prot, flags, hf, off);
     if (r < 0) {
         mm_unmap(&as->mm, addr, size);
-        return (asptr_t) -1;
+        return (lfiptr_t) -1;
     }
     return addr;
 }
 
 int
-pal_as_mprotect(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot)
+lfi_as_mprotect(struct LFIAddrSpace* as, lfiptr_t addr, size_t size, int prot)
 {
     assert(addr >= as->minaddr && addr + size <= as->maxaddr);
 
@@ -120,7 +121,7 @@ pal_as_mprotect(struct PlatAddrSpace* as, asptr_t addr, size_t size, int prot)
 }
 
 int
-pal_as_munmap(struct PlatAddrSpace* as, asptr_t addr, size_t size)
+lfi_as_munmap(struct LFIAddrSpace* as, lfiptr_t addr, size_t size)
 {
     if (addr >= as->minaddr && addr + size < as->maxaddr)
         return mm_unmap_cb(&as->mm, addr, size, cbunmap, NULL);
@@ -128,35 +129,32 @@ pal_as_munmap(struct PlatAddrSpace* as, asptr_t addr, size_t size)
 }
 
 void
-pal_as_free(struct PlatAddrSpace* as)
+lfi_as_free(struct LFIAddrSpace* as)
 {
     assert(!"unimplemented");
 }
 
-asuserptr_t
-pal_as_p2user(struct PlatAddrSpace* as, void* p)
+// TODO: lfi_as_toptr
+lfiptr_t
+lfi_as_toptr(struct LFIAddrSpace* as, void* p)
 {
-    asuserptr_t userp = (asuserptr_t) p;
+    lfiptr_t userp = (lfiptr_t) p;
     assert(userp >= as->minaddr && userp < as->maxaddr);
     return userp;
 }
 
+// TODO: lfi_as_fmptr
 void*
-pal_as_user2p(struct PlatAddrSpace* as, asuserptr_t userp)
+lfi_as_fmptr(struct LFIAddrSpace* as, lfiptr_t userp)
 {
     if (userp >= as->minaddr && userp < as->maxaddr)
         return (void*) userp;
     return NULL;
 }
 
-asuserptr_t
-pal_as_ap2user(struct PlatAddrSpace* as, asptr_t asp)
+// TODO: lfi_as_validptr
+lfiptr_t
+lfi_as_validptr(struct LFIAddrSpace* as, lfiptr_t asp)
 {
-    return (asuserptr_t) asp;
-}
-
-asptr_t
-pal_as_user2ap(struct PlatAddrSpace* as, asuserptr_t asup)
-{
-    return (asptr_t) asup;
+    return (lfiptr_t) asp;
 }

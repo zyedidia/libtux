@@ -78,12 +78,5 @@ if host == 'auto'
   host = 'linux'
 endif
 
-pal = get_option('pal')
-if pal == 'auto'
-  # TODO: pick a valid isolation layer based on the chosen host
-  pal = 'lfi'
-endif
-
 subdir('src')
-subdir('pal')
 subdir('tools')

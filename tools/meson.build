@@ -1,6 +1,6 @@
 executable(
-  'tux-run',
-  sources: ['tux_run.c'],
-  dependencies: [libtux_dep, libpal_lfi_dep, argp],
+  'lfi-run',
+  sources: ['lfi_run.c'],
+  dependencies: [liblfi_dep, argp],
   install: true,
 )

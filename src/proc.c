@@ -51,13 +51,13 @@ procnewthread(struct TuxThread* p)
     if (!newp)
         goto err;
 
-    struct PlatContext* ctx = pal_ctx_new(p->proc->tux->plat, p->proc->p_as, newp, false);
+    struct LFIContext* ctx = lfi_ctx_new(p->proc->tux->plat, p->proc->p_as, newp, false);
     if (!ctx)
         goto err1;
     newp->p_ctx = ctx;
     newp->proc = p->proc;
     newp->tid = nexttid();
-    *pal_ctx_regs(newp->p_ctx) = *pal_ctx_regs(p->p_ctx);
+    *lfi_ctx_regs(newp->p_ctx) = *lfi_ctx_regs(p->p_ctx);
 
     // TODO: allocate stack?
 
@@ -76,14 +76,14 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
     if (!p)
         return NULL;
     p->proc->tux = tux;
-    struct PlatAddrSpace* as = pal_as_new(tux->plat);
+    struct LFIAddrSpace* as = lfi_as_new(tux->plat);
     if (!as)
         goto err1;
-    struct PlatContext* ctx = pal_ctx_new(tux->plat, as, p, true);
+    struct LFIContext* ctx = lfi_ctx_new(tux->plat, as, p, true);
     if (!ctx)
         goto err2;
     p->proc->p_as = as;
-    p->proc->p_info = pal_as_info(as);
+    p->proc->p_info = lfi_as_info(as);
     p->p_ctx = ctx;
 
     if (!procfile(p, prog, size, argc, argv))
@@ -93,9 +93,9 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
 
     return p;
 err3:
-    pal_ctx_free(ctx);
+    lfi_ctx_free(ctx);
 err2:
-    pal_as_free(as);
+    lfi_as_free(as);
 err1:
     procfree(p);
     return NULL;
@@ -136,12 +136,8 @@ enum {
 };
 
 static bool
-stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, asptr_t* newsp)
+stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, lfiptr_t* newsp)
 {
-#ifdef PAL_EXTERNAL_ADDRSPACE
-#error "TODO: platforms that require external address spaces are currently unsupported"
-#endif
-
     char* argv_ptrs[ARGC_MAX];
     char* stack_top = (char*) info->stack + info->stacksize;
     char* p_argv = (char*) stack_top - ARG_BLOCK;
@@ -162,7 +158,7 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
 
     // Write argc and argv pointers to the stack.
     long* p_argc = (long*) (stack_top - 2 * ARG_BLOCK);
-    *newsp = (asptr_t) p_argc;
+    *newsp = (lfiptr_t) p_argc;
     *p_argc++ = argc;
     char** p_argvp = (char**) p_argc;
     char** p_argvp_start = p_argvp;
@@ -170,7 +166,7 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
         if ((uintptr_t) p_argvp >= (uintptr_t) stack_top - ARG_BLOCK) {
             return false;
         }
-        p_argvp[i] = (char*) pal_as_p2user(p->p_as, argv_ptrs[i]);
+        p_argvp[i] = (char*) lfi_as_toptr(p->p_as, argv_ptrs[i]);
     }
     p_argvp[argc] = NULL;
     // Empty envp.
@@ -184,11 +180,11 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, a
     *av++ = (struct Auxv) { AT_PHNUM, info->elfphnum };
     *av++ = (struct Auxv) { AT_PHENT, info->elfphentsize };
     *av++ = (struct Auxv) { AT_ENTRY, info->elfentry };
-    *av++ = (struct Auxv) { AT_EXECFN, pal_as_p2user(p->p_as, p_argvp_start[0]) };
+    *av++ = (struct Auxv) { AT_EXECFN, lfi_as_toptr(p->p_as, p_argvp_start[0]) };
     *av++ = (struct Auxv) { AT_PAGESZ, p->tux->opts.pagesize };
     *av++ = (struct Auxv) { AT_HWCAP, 0 };
     *av++ = (struct Auxv) { AT_HWCAP2, 0 };
-    *av++ = (struct Auxv) { AT_RANDOM, pal_as_p2user(p->p_as, p_argvp_start[0]) }; // TODO: AT_RANDOM
+    *av++ = (struct Auxv) { AT_RANDOM, lfi_as_toptr(p->p_as, p_argvp_start[0]) }; // TODO: AT_RANDOM
     *av++ = (struct Auxv) { AT_FLAGS, 0 };
     *av++ = (struct Auxv) { AT_UID, 1000 };
     *av++ = (struct Auxv) { AT_EUID, 1000 };
@@ -209,24 +205,24 @@ procsetup(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, si
     if (!b)
         return false;
 
-    asptr_t sp;
+    lfiptr_t sp;
     if (!stacksetup(p->proc, argc, argv, &info, &sp))
         return false;
 
-    asptr_t entry = info.elfentry;
+    lfiptr_t entry = info.elfentry;
     if (interp != NULL)
         entry = info.ldentry;
 
-    struct TuxRegs* regs = pal_ctx_regs(p->p_ctx);
+    struct TuxRegs* regs = lfi_ctx_regs(p->p_ctx);
     regs_init(regs, entry, sp);
 
     p->proc->brkbase = info.lastva;
     p->proc->brksize = 0;
 
     // Reserve the brk region.
-    const int mapflags = TUX_MAP_PRIVATE | TUX_MAP_ANONYMOUS;
-    asptr_t brkregion = pal_as_mapat(p->proc->p_as, p->proc->brkbase, TUX_BRKMAXSIZE, TUX_PROT_NONE, mapflags, NULL, 0);
-    if (brkregion == (asptr_t) -1)
+    const int mapflags = LFI_MAP_PRIVATE | LFI_MAP_ANONYMOUS;
+    lfiptr_t brkregion = lfi_as_mapat(p->proc->p_as, p->proc->brkbase, TUX_BRKMAXSIZE, LFI_PROT_NONE, mapflags, NULL, 0);
+    if (brkregion == (lfiptr_t) -1)
         return false;
 
     return true;
@@ -234,7 +230,7 @@ procsetup(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, si
 
 int
 procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd,
-        off_t offset, asptr_t* o_mapstart)
+        off_t offset, lfiptr_t* o_mapstart)
 {
     struct HostFile* hf = NULL;
     if (fd >= 0) {
@@ -246,15 +242,15 @@ procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd,
         hf = f->file(f->dev);
     }
     LOCK_WITH_DEFER(&p->lk_as, lk_as);
-    asptr_t addr = pal_as_mapany(p->p_as, size, prot, flags, hf, offset);
-    if (addr == (asptr_t) -1)
+    lfiptr_t addr = lfi_as_mapany(p->p_as, size, prot, flags, hf, offset);
+    if (addr == (lfiptr_t) -1)
         return -TUX_EINVAL;
     *o_mapstart = (uintptr_t) addr;
     return 0;
 }
 
 int
-procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags,
+procmapat(struct TuxProc* p, lfiptr_t start, size_t size, int prot, int flags,
         int fd, off_t offset)
 {
     struct HostFile* hf = NULL;
@@ -267,17 +263,17 @@ procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags,
         hf = f->file(f->dev);
     }
     LOCK_WITH_DEFER(&p->lk_as, lk_as);
-    asptr_t addr = pal_as_mapat(p->p_as, start, size, prot, flags, hf, offset);
-    if (addr == (asptr_t) -1)
+    lfiptr_t addr = lfi_as_mapat(p->p_as, start, size, prot, flags, hf, offset);
+    if (addr == (lfiptr_t) -1)
         return -TUX_EINVAL;
     return 0;
 }
 
 int
-procunmap(struct TuxProc* p, asptr_t start, size_t size)
+procunmap(struct TuxProc* p, lfiptr_t start, size_t size)
 {
     LOCK_WITH_DEFER(&p->lk_as, lk_as);
-    return pal_as_munmap(p->p_as, start, size);
+    return lfi_as_munmap(p->p_as, start, size);
 }
 
 static void
@@ -288,7 +284,7 @@ procfree(struct TuxThread* p)
 }
 
 EXPORT struct TuxThread*
-tux_proc_newfile(struct Tux* tux, uint8_t* prog, size_t progsz, int argc, char** argv)
+lfi_tux_proc_new(struct Tux* tux, uint8_t* prog, size_t progsz, int argc, char** argv)
 {
     return procnewfile(tux, prog, progsz, argc, argv);
 }

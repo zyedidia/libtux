@@ -13,7 +13,7 @@ bufreadfile(const char* filename)
         goto err;
 
     host_seek(f, 0, TUX_SEEK_SET);
-    void* p = host_mmap(NULL, size, TUX_PROT_READ, TUX_MAP_PRIVATE, f, 0);
+    void* p = host_mmap(NULL, size, LFI_PROT_READ, LFI_MAP_PRIVATE, f, 0);
     if (p == (void*) -1)
         goto err;
 

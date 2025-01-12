@@ -24,7 +24,7 @@ getfdir(struct TuxProc* p, int dirfd)
 }
 
 ssize_t
-sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size)
+sys_write(struct TuxProc* p, int fd, lfiptr_t bufp, size_t size)
 {
     if (size == 0)
         return 0;
@@ -40,7 +40,7 @@ sys_write(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size)
 }
 
 ssize_t
-sys_read(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size)
+sys_read(struct TuxProc* p, int fd, lfiptr_t bufp, size_t size)
 {
     if (size == 0)
         return 0;
@@ -61,7 +61,7 @@ struct IOVec {
 };
 
 ssize_t
-sys_writev(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt)
+sys_writev(struct TuxProc* p, int fd, lfiptr_t iovp, size_t iovcnt)
 {
     uint8_t* iovb = procbufalign(p, iovp, iovcnt * sizeof(struct IOVec), alignof(struct IOVec));
     if (!iovb)
@@ -81,7 +81,7 @@ sys_writev(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt)
 }
 
 ssize_t
-sys_readv(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt)
+sys_readv(struct TuxProc* p, int fd, lfiptr_t iovp, size_t iovcnt)
 {
     uint8_t* iovb = procbufalign(p, iovp, iovcnt * sizeof(struct IOVec), alignof(struct IOVec));
     if (!iovb)
@@ -101,7 +101,7 @@ sys_readv(struct TuxProc* p, int fd, asuserptr_t iovp, size_t iovcnt)
 }
 
 int
-sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode)
+sys_openat(struct TuxProc* p, int dirfd, lfiptr_t pathp, int flags, int mode)
 {
     struct HostFile* dir = getfdir(p, dirfd);
     if (dirfd != TUX_AT_FDCWD && !dir)
@@ -127,7 +127,7 @@ sys_openat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags, int mode)
 }
 
 int
-sys_open(struct TuxProc* p, asuserptr_t pathp, int flags, int mode)
+sys_open(struct TuxProc* p, lfiptr_t pathp, int flags, int mode)
 {
     return sys_openat(p, TUX_AT_FDCWD, pathp, flags, mode);
 }
@@ -142,7 +142,7 @@ sys_close(struct TuxProc* p, int fd)
 }
 
 ssize_t
-sys_readlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t bufp, size_t size)
+sys_readlinkat(struct TuxProc* p, int dirfd, lfiptr_t pathp, lfiptr_t bufp, size_t size)
 {
     struct HostFile* dir = getfdir(p, dirfd);
     if (dirfd != TUX_AT_FDCWD && !dir)
@@ -158,13 +158,13 @@ sys_readlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t bufp
 }
 
 ssize_t
-sys_readlink(struct TuxProc* p, asuserptr_t pathp, asuserptr_t bufp, size_t size)
+sys_readlink(struct TuxProc* p, lfiptr_t pathp, lfiptr_t bufp, size_t size)
 {
     return sys_readlinkat(p, TUX_AT_FDCWD, pathp, bufp, size);
 }
 
 ssize_t
-sys_pread64(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size, ssize_t offset)
+sys_pread64(struct TuxProc* p, int fd, lfiptr_t bufp, size_t size, ssize_t offset)
 {
     struct FDFile* f = fdget(&p->fdtable, fd);
     if (!f)
@@ -182,7 +182,7 @@ sys_pread64(struct TuxProc* p, int fd, asuserptr_t bufp, size_t size, ssize_t of
 }
 
 int
-sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t statbufp, int flags)
+sys_newfstatat(struct TuxProc* p, int dirfd, lfiptr_t pathp, lfiptr_t statbufp, int flags)
 {
     uint8_t* statb = procbufalign(p, statbufp, sizeof(struct Stat), alignof(struct Stat));
     if (!statb)
@@ -206,27 +206,27 @@ sys_newfstatat(struct TuxProc* p, int dirfd, asuserptr_t pathp, asuserptr_t stat
 }
 
 int
-sys_fstat(struct TuxProc* p, int fd, asuserptr_t statbufp)
+sys_fstat(struct TuxProc* p, int fd, lfiptr_t statbufp)
 {
     return sys_newfstatat(p, fd, 0, statbufp, TUX_AT_EMPTY_PATH);
 }
 
 
 int
-sys_stat(struct TuxProc* p, asuserptr_t pathp, asuserptr_t statbufp)
+sys_stat(struct TuxProc* p, lfiptr_t pathp, lfiptr_t statbufp)
 {
     return sys_newfstatat(p, TUX_AT_FDCWD, pathp, statbufp, 0);
 }
 
 int
-sys_lstat(struct TuxProc* p, asuserptr_t pathp, asuserptr_t statbufp)
+sys_lstat(struct TuxProc* p, lfiptr_t pathp, lfiptr_t statbufp)
 {
     // TODO: lstat: handle links properly
     return sys_stat(p, pathp, statbufp);
 }
 
 ssize_t
-sys_getdents64(struct TuxProc* p, int fd, asuserptr_t dirp, size_t count)
+sys_getdents64(struct TuxProc* p, int fd, lfiptr_t dirp, size_t count)
 {
     struct FDFile* f = fdget(&p->fdtable, fd);
     if (!f)
@@ -331,7 +331,7 @@ sys_fsync(struct TuxProc* p, int fd)
 }
 
 int
-sys_unlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags)
+sys_unlinkat(struct TuxProc* p, int dirfd, lfiptr_t pathp, int flags)
 {
     struct HostFile* dir = getfdir(p, dirfd);
     if (dirfd != TUX_AT_FDCWD && !dir)
@@ -348,7 +348,7 @@ sys_unlinkat(struct TuxProc* p, int dirfd, asuserptr_t pathp, int flags)
 }
 
 int
-sys_unlink(struct TuxProc* p, asuserptr_t pathp)
+sys_unlink(struct TuxProc* p, lfiptr_t pathp)
 {
     return sys_unlinkat(p, TUX_AT_FDCWD, pathp, 0);
 }

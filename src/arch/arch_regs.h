@@ -1,9 +1,9 @@
 #pragma once
 
-#include "tux_arch.h"
-#include "tux_pal.h"
+#include "lfi_arch.h"
+#include "lfi.h"
 
-void regs_init(struct TuxRegs* regs, asptr_t entry, asptr_t sp);
+void regs_init(struct TuxRegs* regs, lfiptr_t entry, lfiptr_t sp);
 
 uintptr_t* regs_return(struct TuxRegs* regs);
 

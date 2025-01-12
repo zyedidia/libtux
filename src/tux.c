@@ -1,16 +1,22 @@
 #include <stdlib.h>
 
+#include "lfi_tux.h"
 #include "host.h"
-#include "tux.h"
-#include "tux_pal.h"
+#include "lfi.h"
 #include "proc.h"
 #include "sys.h"
 #include "engine.h"
 
 #include "arch_sys.h"
 
+EXPORT void
+lfi_tux_syscall(struct LFIContext* ctx)
+{
+    arch_syshandle(ctx);
+}
+
 EXPORT struct Tux*
-tux_new(struct Platform* plat, struct TuxOptions opts)
+lfi_tux_new(struct LFIPlatform* plat, struct TuxOptions opts)
 {
     struct Tux* tux = malloc(sizeof(struct Tux));
     if (!tux)
@@ -34,7 +40,7 @@ tux_new(struct Platform* plat, struct TuxOptions opts)
     tux->fstdout->refs++;
     tux->fstderr->refs++;
 
-    pal_sys_handler(plat, &arch_syshandle);
+    lfi_sys_handler(plat, &lfi_tux_syscall);
     return tux;
 err3:
     free(tux->fstdout);
@@ -46,7 +52,7 @@ err1:
 }
 
 EXPORT uint64_t
-tux_proc_start(struct Tux* tux, struct TuxThread* p)
+lfi_tux_proc_run(struct Tux* tux, struct TuxThread* p)
 {
-    return pal_ctx_run(p->p_ctx, p->proc->p_as);
+    return lfi_ctx_run(p->p_ctx, p->proc->p_as);
 }

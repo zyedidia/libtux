@@ -8,16 +8,16 @@
 
 #include "buf.h"
 #include "proc.h"
-#include "tux_pal.h"
+#include "lfi.h"
 
 struct ELFLoadInfo {
-    asptr_t stack;
+    lfiptr_t stack;
     size_t stacksize;
-    asptr_t lastva;
-    asptr_t elfentry;
-    asptr_t ldentry;
-    asptr_t elfbase;
-    asptr_t ldbase;
+    lfiptr_t lastva;
+    lfiptr_t elfentry;
+    lfiptr_t ldentry;
+    lfiptr_t elfbase;
+    lfiptr_t ldbase;
     uint64_t elfphoff;
     uint16_t elfphnum;
     uint16_t elfphentsize;

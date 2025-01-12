@@ -1,22 +1,23 @@
 #pragma once
 
-#include "tux_pal.h"
-#include "tux_arch.h"
+#include "lfi.h"
+#include "lfi_arch.h"
 #include "mmap.h"
 #include "boxmap.h"
 
 struct PlatOptions {
     size_t pagesize;
     size_t vmsize;
+    bool sysexternal;
 };
 
-struct Platform {
+struct LFIPlatform {
     struct BoxMap* bm;
     struct PlatOptions opts;
     SysHandlerFn syshandler;
 };
 
-struct PlatAddrSpace {
+struct LFIAddrSpace {
     uintptr_t base;
     size_t size;
     uintptr_t minaddr;
@@ -25,12 +26,19 @@ struct PlatAddrSpace {
     MMAddrSpace mm;
 };
 
-struct PlatContext {
+struct Sys {
+    uintptr_t rtcalls[256];
+    uintptr_t base;
+    uintptr_t ctx;
+};
+
+struct LFIContext {
     void* kstackp;
-    uintptr_t ktp;
+    uintptr_t tp;
     struct TuxRegs regs;
     void* ctxp;
-    struct Platform* plat;
+    struct LFIPlatform* plat;
+    struct Sys* sys;
 };
 
 static inline size_t
@@ -39,7 +47,4 @@ gb(size_t x)
     return x * 1024 * 1024 * 1024;
 }
 
-extern struct PlatContext* pal_myctx;
-
-void sud_block(void);
-void sud_allow(void);
+_Thread_local extern struct LFIContext* lfi_myctx;

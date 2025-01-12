@@ -1,10 +1,10 @@
 #pragma once
 
-#include "tux.h"
+#include "lfi_tux.h"
 #include "file.h"
 
 struct Tux {
-    struct Platform* plat;
+    struct LFIPlatform* plat;
     struct TuxOptions opts;
 
     struct FDFile* fstdin;

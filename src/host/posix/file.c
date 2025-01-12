@@ -184,15 +184,6 @@ host_fchownat(struct HostFile* dir, const char* path, tux_uid_t owner, tux_gid_t
 }
 
 int
-host_fchown(struct HostFile* file, tux_uid_t owner, tux_gid_t group)
-{
-    int r = fchown(file->fd, owner, group);
-    if (r < 0)
-        return tuxerr(errno);
-    return 0;
-}
-
-int
 host_fchmodat(struct HostFile* dir, const char* path, tux_mode_t mode, int flags)
 {
     assert(flags == 0);
@@ -214,18 +205,18 @@ host_fchmod(struct HostFile* file, tux_mode_t mode)
 static int
 mmapprot(int prot)
 {
-    return ((prot & TUX_PROT_READ) ? PROT_READ : 0) |
-        ((prot & TUX_PROT_WRITE) ? PROT_WRITE : 0) |
-        ((prot & TUX_PROT_EXEC) ? PROT_EXEC : 0);
+    return ((prot & LFI_PROT_READ) ? PROT_READ : 0) |
+        ((prot & LFI_PROT_WRITE) ? PROT_WRITE : 0) |
+        ((prot & LFI_PROT_EXEC) ? PROT_EXEC : 0);
 }
 
 static int
 mmapflags(int flags)
 {
-    return ((flags & TUX_MAP_PRIVATE) ? MAP_PRIVATE : 0) |
-        ((flags & TUX_MAP_ANONYMOUS) ? MAP_ANONYMOUS : 0) |
-        ((flags & TUX_MAP_FIXED) ? MAP_FIXED : 0) |
-        ((flags & TUX_MAP_SHARED) ? MAP_SHARED : 0);
+    return ((flags & LFI_MAP_PRIVATE) ? MAP_PRIVATE : 0) |
+        ((flags & LFI_MAP_ANONYMOUS) ? MAP_ANONYMOUS : 0) |
+        ((flags & LFI_MAP_FIXED) ? MAP_FIXED : 0) |
+        ((flags & LFI_MAP_SHARED) ? MAP_SHARED : 0);
 }
 
 void*

@@ -6,7 +6,8 @@
 #include <stdbool.h>
 
 #include "types.h"
-#include "proc.h"
+
+struct TuxThread;
 
 struct HostFile;
 

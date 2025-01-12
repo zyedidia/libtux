@@ -8,8 +8,8 @@
 #include "syscalls/syscalls.h"
 
 enum {
-    MAPANON = TUX_MAP_PRIVATE | TUX_MAP_ANONYMOUS,
-    MAPFILE = TUX_MAP_PRIVATE,
+    MAPANON = LFI_MAP_PRIVATE | LFI_MAP_ANONYMOUS,
+    MAPFILE = LFI_MAP_PRIVATE,
 };
 
 enum {
@@ -29,15 +29,15 @@ elfcheck(struct FileHeader* ehdr)
 static int
 pflags(int prot)
 {
-    return ((prot & PF_R) ? TUX_PROT_READ : 0) |
-        ((prot & PF_W) ? TUX_PROT_WRITE : 0) |
-        ((prot & PF_X) ? TUX_PROT_EXEC : 0);
+    return ((prot & PF_R) ? LFI_PROT_READ : 0) |
+        ((prot & PF_W) ? LFI_PROT_WRITE : 0) |
+        ((prot & PF_X) ? LFI_PROT_EXEC : 0);
 }
 
 static void
 sanitize(void* p, size_t sz, int prot)
 {
-    if ((prot & TUX_PROT_EXEC) == 0)
+    if ((prot & LFI_PROT_EXEC) == 0)
         return;
 #if (defined(__x86_64__) || defined(_M_X64)) && TUX_SANITIZE_CODE
     const uint8_t SAFE_BYTE = 0xcc;
@@ -46,11 +46,11 @@ sanitize(void* p, size_t sz, int prot)
 }
 
 static bool
-bufreadelfseg(struct TuxProc* proc, asptr_t start, asptr_t offset, asptr_t end,
+bufreadelfseg(struct TuxProc* proc, lfiptr_t start, lfiptr_t offset, lfiptr_t end,
         size_t p_offset, size_t filesz, int prot, buf_t buf, size_t pagesize)
 {
-    asptr_t p = pal_as_mapat(proc->p_as, start, end - start, TUX_PROT_READ | TUX_PROT_WRITE, MAPANON, NULL, 0);
-    if (p == (asptr_t) -1) {
+    lfiptr_t p = lfi_as_mapat(proc->p_as, start, end - start, LFI_PROT_READ | LFI_PROT_WRITE, MAPANON, NULL, 0);
+    if (p == (lfiptr_t) -1) {
         return false;
     }
     // If we have any subsequent errors, it is expected that the caller will
@@ -63,7 +63,7 @@ bufreadelfseg(struct TuxProc* proc, asptr_t start, asptr_t offset, asptr_t end,
     if (n != (ssize_t) filesz) {
         return false;
     }
-    if (pal_as_mprotect(proc->p_as, start, end - start, prot) < 0) {
+    if (lfi_as_mprotect(proc->p_as, start, end - start, prot) < 0) {
         return false;
     }
     return true;
@@ -186,13 +186,13 @@ elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat
     };
 
     size_t stacksize = p->proc->tux->opts.stacksize;
-    asptr_t stack = pal_as_mapat(p->proc->p_as, p->proc->p_info.maxaddr - stacksize, stacksize, TUX_PROT_READ | TUX_PROT_WRITE, MAPANON, NULL, 0);
-    if (stack == (asptr_t) -1)
+    lfiptr_t stack = lfi_as_mapat(p->proc->p_as, p->proc->p_info.maxaddr - stacksize, stacksize, LFI_PROT_READ | LFI_PROT_WRITE, MAPANON, NULL, 0);
+    if (stack == (lfiptr_t) -1)
         goto err;
     p->stack = stack;
 
-    asptr_t base = p->proc->p_info.minaddr;
-    asptr_t pfirst, plast, pentry, ifirst, ilast, ientry;
+    lfiptr_t base = p->proc->p_info.minaddr;
+    lfiptr_t pfirst, plast, pentry, ifirst, ilast, ientry;
     bool hasinterp = interp.data != NULL;
     if (!load(p->proc, prog, base, &pfirst, &plast, &pentry))
         goto err;

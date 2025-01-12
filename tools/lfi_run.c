@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 
-#include "tux.h"
+#include "lfi_tux.h"
 #include "lfi.h"
 
 typedef struct {
@@ -104,11 +104,11 @@ main(int argc, char** argv)
         return 1;
     }
 
-    struct Platform* plat = lfi_new_plat(args.opts.pagesize);
+    struct LFIPlatform* plat = lfi_new_plat(args.opts.pagesize);
 
     args.opts.stacksize = mb(2);
 
-    struct Tux* tux = tux_new(plat, args.opts);
+    struct Tux* tux = lfi_tux_new(plat, args.opts);
 
     buf_t f = bufreadfile(args.inputs[0]);
     if (!f.data) {
@@ -116,13 +116,13 @@ main(int argc, char** argv)
         return 1;
     }
 
-    struct TuxThread* p = tux_proc_newfile(tux, f.data, f.size, args.ninputs, &args.inputs[0]);
+    struct TuxThread* p = lfi_tux_proc_new(tux, f.data, f.size, args.ninputs, &args.inputs[0]);
     if (!p) {
         fprintf(stderr, "error creating process\n");
         return 1;
     }
 
-    uint64_t code = tux_proc_start(tux, p);
+    uint64_t code = lfi_tux_proc_run(tux, p);
 
     if (args.opts.verbose)
         fprintf(stderr, "[tux-run] exited with code: %ld\n", (long) code);

@@ -21,7 +21,7 @@ uintptr_t
 sys_exit(struct TuxThread* p, int code)
 {
     clearctid(p);
-    pal_ctx_exit(p->p_ctx, code);
+    lfi_ctx_exit(p->p_ctx, code);
     assert(!"unreachable");
 }
 
@@ -29,6 +29,6 @@ uintptr_t
 sys_exit_group(struct TuxThread* p, int code)
 {
     // TODO: exit all threads
-    pal_ctx_exit(p->p_ctx, code);
+    lfi_ctx_exit(p->p_ctx, code);
     assert(!"unreachable");
 }

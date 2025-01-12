@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tux_pal.h"
+#include "lfi.h"
 
 enum {
     TUX_SYS_io_setup                = 0,
@@ -311,4 +311,4 @@ enum {
     TUX_SYS_fchmodat2               = 452,
 };
 
-void arch_syshandle(struct PlatContext* ctx);
+void arch_syshandle(struct LFIContext* ctx);

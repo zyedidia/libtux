@@ -5,9 +5,10 @@
 #include <stdio.h>
 #include <pthread.h>
 
+#include "lfi_tux.h"
+
 #include "config.h"
-#include "tux.h"
-#include "tux_pal.h"
+#include "lfi.h"
 #include "types.h"
 #include "futex.h"
 
@@ -50,8 +51,8 @@ struct Dir {
 };
 
 struct TuxProc {
-    struct PlatAddrSpace* p_as;
-    asptr_t brkbase;
+    struct LFIAddrSpace* p_as;
+    lfiptr_t brkbase;
     size_t brksize;
     pthread_mutex_t lk_as;
     pthread_mutex_t lk_brk;
@@ -64,12 +65,12 @@ struct TuxProc {
 #endif
 
     struct Tux* tux;
-    struct TuxAddrSpaceInfo p_info;
+    struct LFIAddrSpaceInfo p_info;
 };
 
 struct TuxThread {
-    struct PlatContext* p_ctx;
-    asptr_t stack;
+    struct LFIContext* p_ctx;
+    lfiptr_t stack;
 
     uintptr_t ctid;
     int tid;
@@ -77,10 +78,10 @@ struct TuxThread {
     struct TuxProc* proc;
 };
 
-int procmapat(struct TuxProc* p, asptr_t start, size_t size, int prot, int flags, int fd, off_t offset);
+int procmapat(struct TuxProc* p, lfiptr_t start, size_t size, int prot, int flags, int fd, off_t offset);
 
-int procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd, off_t offset, asptr_t* o_mapstart);
+int procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd, off_t offset, lfiptr_t* o_mapstart);
 
-int procunmap(struct TuxProc* p, asptr_t start, size_t size);
+int procunmap(struct TuxProc* p, lfiptr_t start, size_t size);
 
 struct TuxThread* procnewthread(struct TuxThread* p);

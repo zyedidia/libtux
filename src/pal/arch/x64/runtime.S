@@ -2,7 +2,7 @@
 #define PROC_REGS 16
 
 .macro SAVE_PARTIAL_REGS
-    mov pal_myctx@gottpoff(%rip), %rcx
+    mov lfi_myctx@gottpoff(%rip), %rcx
     movq %fs:(%rcx), %rcx
     mov %rsp, PROC_REGS+8*0(%rcx)
     mov %rax, PROC_REGS+8*1(%rcx)
@@ -20,8 +20,8 @@
 .endm
 
 .p2align 4
-.global pal_ctx_entry
-pal_ctx_entry:
+.global lfi_ctx_entry
+lfi_ctx_entry:
     // save callee-saved registers to stack
     pushq %r15
     pushq %r14
@@ -31,11 +31,11 @@ pal_ctx_entry:
     pushq %rbp
     // save stack to kstackp
     mov %rsp, (%rsi)
-    jmp pal_restore_regs
+    jmp lfi_restore_regs
 
 .p2align 4
-.globl pal_restore_regs
-pal_restore_regs:
+.globl lfi_restore_regs
+lfi_restore_regs:
     mov PROC_REGS+8*17(%rdi), %r11
     wrgsbase %r11
     mov PROC_REGS+8*0(%rdi), %rsp
@@ -57,8 +57,8 @@ pal_restore_regs:
     jmpq *%r11
 
 .p2align 4
-.global pal_asm_ctx_exit
-pal_asm_ctx_exit:
+.global lfi_asm_ctx_exit
+lfi_asm_ctx_exit:
     movq %rdi, %rsp
     movq %rsi, %rax
     popq %rbp
@@ -71,10 +71,10 @@ pal_asm_ctx_exit:
 
 // Loads the sandbox's thread pointer into %rax. Does not clobber flags.
 .p2align 4
-.global pal_get_tp
-pal_get_tp:
+.global lfi_get_tp
+lfi_get_tp:
     // %rax = myproc
-    mov pal_myctx@gottpoff(%rip), %rax
+    mov lfi_myctx@gottpoff(%rip), %rax
     movq %fs:(%rax), %rax
     // %rax = tp
     movq 8(%rax), %rax
@@ -85,9 +85,9 @@ pal_get_tp:
 // x86-64, since libc will set the thread pointer via an archprctl system call
 // rather than wrfsbase.
 .p2align 4
-.global pal_set_tp
-pal_set_tp:
-    mov pal_myctx@gottpoff(%rip), %r14
+.global lfi_set_tp
+lfi_set_tp:
+    mov lfi_myctx@gottpoff(%rip), %r14
     movq %fs:(%r14), %r14
     mov %rax, 8(%r14)
     mov PROC_REGS+8*14(%r14), %r14
@@ -95,8 +95,8 @@ pal_set_tp:
     int3
 
 .p2align 4
-.global pal_syscall_entry
-pal_syscall_entry:
+.global lfi_syscall_entry
+lfi_syscall_entry:
     SAVE_PARTIAL_REGS
     // Proc* is now in %rcx
     mov (%rcx), %rsp // load stack
@@ -105,15 +105,15 @@ pal_syscall_entry:
     pushq %r11
     sub $8, %rsp
     mov %rcx, %rdi
-    call pal_syscall_handler
+    call lfi_syscall_handler
     add $8, %rsp
     popq %r11
     popq %rdi
     // fallthrough to restore_partial_regs
 
 // Restore only caller-saved registers.
-.globl pal_restore_partial_regs
-pal_restore_partial_regs:
+.globl lfi_restore_partial_regs
+lfi_restore_partial_regs:
     mov  PROC_REGS+8*0(%rdi), %rsp
     mov  PROC_REGS+8*1(%rdi), %rax
     mov  $0, %rcx // clobbered
