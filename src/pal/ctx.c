@@ -54,27 +54,27 @@ syssetup(struct LFIPlatform* plat, struct Sys* sys, struct LFIContext* ctx, uint
     assert(err == 0);
 }
 
-struct LFIContext*
-lfi_ctx_new(struct LFIPlatform* plat, struct LFIAddrSpace* as, void* ctxp, bool main)
+EXPORT struct LFIContext*
+lfi_ctx_new(struct LFIAddrSpace* as, void* ctxp, bool main)
 {
     struct LFIContext* ctx = malloc(sizeof(struct LFIContext));
     if (!ctx)
         return NULL;
 
     struct Sys* sys;
-    if (main || plat->opts.sysexternal) {
-        sys = sysalloc(plat, as->base);
+    if (main || as->plat->opts.sysexternal) {
+        sys = sysalloc(as->plat, as->base);
         if (!sys)
             goto err;
-        syssetup(plat, sys, ctx, as->base);
+        syssetup(as->plat, sys, ctx, as->base);
     } else {
         sys = (struct Sys*) as->base;
     }
 
     *ctx = (struct LFIContext) {
         .ctxp = ctxp,
-        .plat = plat,
         .sys = sys,
+        .as = as,
     };
 
     lfi_regs_init(&ctx->regs, as, ctx);
@@ -85,7 +85,7 @@ err:
     return NULL;
 }
 
-uint64_t
+EXPORT uint64_t
 lfi_ctx_run(struct LFIContext* ctx, struct LFIAddrSpace* as)
 {
     (void) as;
@@ -96,32 +96,32 @@ lfi_ctx_run(struct LFIContext* ctx, struct LFIAddrSpace* as)
     return ret;
 }
 
-void
+EXPORT void
 lfi_ctx_free(struct LFIContext* ctx)
 {
     free(ctx);
 }
 
-struct TuxRegs*
+EXPORT struct TuxRegs*
 lfi_ctx_regs(struct LFIContext* ctx)
 {
     return &ctx->regs;
 }
 
-void*
+EXPORT void*
 lfi_ctx_data(struct LFIContext* ctx)
 {
     return ctx->ctxp;
 }
 
-void
+EXPORT void
 lfi_ctx_exit(struct LFIContext* ctx, uint64_t val)
 {
     lfi_myctx = NULL;
     lfi_asm_ctx_exit(ctx->kstackp, val);
 }
 
-void
+EXPORT void
 lfi_ctx_tpset(struct LFIContext* ctx, lfiptr_t tp)
 {
     ctx->tp = tp;

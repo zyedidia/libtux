@@ -10,19 +10,6 @@
 #include "proc.h"
 #include "lfi.h"
 
-struct ELFLoadInfo {
-    lfiptr_t stack;
-    size_t stacksize;
-    lfiptr_t lastva;
-    lfiptr_t elfentry;
-    lfiptr_t ldentry;
-    lfiptr_t elfbase;
-    lfiptr_t ldbase;
-    uint64_t elfphoff;
-    uint16_t elfphnum;
-    uint16_t elfphentsize;
-};
-
 enum {
     ELF_MAGIC = 0x464C457FU, // "\x7ELF" in little endian
 
@@ -163,4 +150,4 @@ elfinterp(uint8_t* progdat, size_t progsz)
     return NULL;
 }
 
-bool elfload(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, struct ELFLoadInfo* o_info);
+bool elfload(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, struct LFILoadInfo* o_info);

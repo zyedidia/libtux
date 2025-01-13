@@ -80,3 +80,4 @@ endif
 
 subdir('src')
 subdir('tools')
+subdir('test')

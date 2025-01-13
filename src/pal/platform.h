@@ -4,10 +4,13 @@
 #include "lfi_arch.h"
 #include "mmap.h"
 #include "boxmap.h"
+#include "types.h"
 
 struct PlatOptions {
     size_t pagesize;
     size_t vmsize;
+    bool perf;
+    bool verbose;
     bool sysexternal;
 };
 
@@ -24,6 +27,8 @@ struct LFIAddrSpace {
     uintptr_t maxaddr;
 
     MMAddrSpace mm;
+
+    struct LFIPlatform* plat;
 };
 
 struct Sys {
@@ -37,8 +42,8 @@ struct LFIContext {
     uintptr_t tp;
     struct TuxRegs regs;
     void* ctxp;
-    struct LFIPlatform* plat;
     struct Sys* sys;
+    struct LFIAddrSpace* as;
 };
 
 static inline size_t

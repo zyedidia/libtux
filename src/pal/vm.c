@@ -6,7 +6,7 @@
 
 #include "lfi.h"
 #include "boxmap.h"
-#include "platform.h"
+#include "pal/platform.h"
 #include "host.h"
 
 static size_t
@@ -15,7 +15,7 @@ guardsize(void)
     return 80 * 1024;
 }
 
-struct LFIAddrSpace*
+EXPORT struct LFIAddrSpace*
 lfi_as_new(struct LFIPlatform* plat)
 {
     struct LFIAddrSpace* as = malloc(sizeof(struct LFIAddrSpace));
@@ -31,6 +31,7 @@ lfi_as_new(struct LFIPlatform* plat)
         .size = size,
         .minaddr = base + guardsize() + plat->opts.pagesize, // for sys page
         .maxaddr = base + size - guardsize(),
+        .plat = plat,
     };
     bool ok = mm_init(&as->mm, as->minaddr, as->maxaddr - as->minaddr, plat->opts.pagesize);
     if (!ok)
@@ -45,7 +46,7 @@ err1:
     return NULL;
 }
 
-struct LFIAddrSpaceInfo
+EXPORT struct LFIAddrSpaceInfo
 lfi_as_info(struct LFIAddrSpace* as)
 {
     return (struct LFIAddrSpaceInfo) {
@@ -67,7 +68,7 @@ asmap(struct LFIAddrSpace* as, uintptr_t start, size_t size, int prot,
     return 0;
 }
 
-lfiptr_t
+EXPORT lfiptr_t
 lfi_as_mapany(struct LFIAddrSpace* as, size_t size, int prot, int flags,
         struct HostFile* hf, off_t off)
 {
@@ -91,7 +92,7 @@ cbunmap(uint64_t start, size_t len, MMInfo info, void* udata)
     assert(p == (void*) start);
 }
 
-lfiptr_t
+EXPORT lfiptr_t
 lfi_as_mapat(struct LFIAddrSpace* as, lfiptr_t addr, size_t size, int prot,
         int flags, struct HostFile* hf, off_t off)
 {
@@ -108,7 +109,7 @@ lfi_as_mapat(struct LFIAddrSpace* as, lfiptr_t addr, size_t size, int prot,
     return addr;
 }
 
-int
+EXPORT int
 lfi_as_mprotect(struct LFIAddrSpace* as, lfiptr_t addr, size_t size, int prot)
 {
     assert(addr >= as->minaddr && addr + size <= as->maxaddr);
@@ -120,7 +121,7 @@ lfi_as_mprotect(struct LFIAddrSpace* as, lfiptr_t addr, size_t size, int prot)
     return host_mprotect((void*) addr, size, prot);
 }
 
-int
+EXPORT int
 lfi_as_munmap(struct LFIAddrSpace* as, lfiptr_t addr, size_t size)
 {
     if (addr >= as->minaddr && addr + size < as->maxaddr)
@@ -128,14 +129,14 @@ lfi_as_munmap(struct LFIAddrSpace* as, lfiptr_t addr, size_t size)
     return -1;
 }
 
-void
+EXPORT void
 lfi_as_free(struct LFIAddrSpace* as)
 {
     assert(!"unimplemented");
 }
 
 // TODO: lfi_as_toptr
-lfiptr_t
+EXPORT lfiptr_t
 lfi_as_toptr(struct LFIAddrSpace* as, void* p)
 {
     lfiptr_t userp = (lfiptr_t) p;
@@ -144,7 +145,7 @@ lfi_as_toptr(struct LFIAddrSpace* as, void* p)
 }
 
 // TODO: lfi_as_fmptr
-void*
+EXPORT void*
 lfi_as_fmptr(struct LFIAddrSpace* as, lfiptr_t userp)
 {
     if (userp >= as->minaddr && userp < as->maxaddr)
@@ -153,7 +154,7 @@ lfi_as_fmptr(struct LFIAddrSpace* as, lfiptr_t userp)
 }
 
 // TODO: lfi_as_validptr
-lfiptr_t
+EXPORT lfiptr_t
 lfi_as_validptr(struct LFIAddrSpace* as, lfiptr_t asp)
 {
     return (lfiptr_t) asp;

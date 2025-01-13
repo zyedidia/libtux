@@ -31,7 +31,7 @@ struct Args {
     struct TuxOptions opts;
 };
 
-static char doc[] = "tux-run: libtux runner";
+static char doc[] = "lfi-run: LFI Linux emulator";
 
 static char args_doc[] = "INPUT...";
 
@@ -125,7 +125,7 @@ main(int argc, char** argv)
     uint64_t code = lfi_tux_proc_run(tux, p);
 
     if (args.opts.verbose)
-        fprintf(stderr, "[tux-run] exited with code: %ld\n", (long) code);
+        fprintf(stderr, "[lfi-run] exited with code: %ld\n", (long) code);
 
-    return 0;
+    return (int) code;
 }

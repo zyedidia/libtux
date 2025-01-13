@@ -46,10 +46,10 @@ sanitize(void* p, size_t sz, int prot)
 }
 
 static bool
-bufreadelfseg(struct TuxProc* proc, lfiptr_t start, lfiptr_t offset, lfiptr_t end,
+bufreadelfseg(struct LFIAddrSpace* as, lfiptr_t start, lfiptr_t offset, lfiptr_t end,
         size_t p_offset, size_t filesz, int prot, buf_t buf, size_t pagesize)
 {
-    lfiptr_t p = lfi_as_mapat(proc->p_as, start, end - start, LFI_PROT_READ | LFI_PROT_WRITE, MAPANON, NULL, 0);
+    lfiptr_t p = lfi_as_mapat(as, start, end - start, LFI_PROT_READ | LFI_PROT_WRITE, MAPANON, NULL, 0);
     if (p == (lfiptr_t) -1) {
         return false;
     }
@@ -63,17 +63,18 @@ bufreadelfseg(struct TuxProc* proc, lfiptr_t start, lfiptr_t offset, lfiptr_t en
     if (n != (ssize_t) filesz) {
         return false;
     }
-    if (lfi_as_mprotect(proc->p_as, start, end - start, prot) < 0) {
+    if (lfi_as_mprotect(as, start, end - start, prot) < 0) {
         return false;
     }
     return true;
 }
 
 static bool
-load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr_t* plast, uintptr_t* pentry)
+load(struct LFIAddrSpace* as, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr_t* plast, uintptr_t* pentry, size_t pagesize)
 {
+    struct LFIAddrSpaceInfo info = lfi_as_info(as);
+
     uintptr_t last = 0;
-    size_t pagesize = proc->tux->opts.pagesize;
 
     struct FileHeader ehdr;
     size_t n = bufread(buf, &ehdr, sizeof(ehdr), 0);
@@ -102,7 +103,7 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
 
     uintptr_t first = 0;
 
-    uintptr_t elfbase = ehdr.type == ET_DYN ? base : proc->p_info.base;
+    uintptr_t elfbase = ehdr.type == ET_DYN ? base : info.base;
 
     // TODO: enforce filesz/memsz limit?
 
@@ -131,11 +132,11 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
         laststart = start;
 
         if (ehdr.type == ET_EXEC) {
-            if (start < base - proc->p_info.base) {
+            if (start < base - info.base) {
                 goto err1;
             }
-            start = start - (base - proc->p_info.base);
-            end = end - (base - proc->p_info.base);
+            start = start - (base - info.base);
+            end = end - (base - info.base);
         }
 
         if (p->memsz < p->filesz) {
@@ -145,9 +146,9 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
             goto err1;
         }
 
-        VERBOSE(proc->tux, "load %lx %lx (P: %d)", base + start, base + end, pflags(p->flags));
+        /* VERBOSE(proc->tux, "load %lx %lx (P: %d)", base + start, base + end, pflags(p->flags)); */
 
-        if (!bufreadelfseg(proc, base + start, offset, base + end, p->offset, p->filesz, pflags(p->flags), buf, pagesize))
+        if (!bufreadelfseg(as, base + start, offset, base + end, p->offset, p->filesz, pflags(p->flags), buf, pagesize))
             goto err1;
 
         if (base == 0) {
@@ -159,7 +160,7 @@ load(struct TuxProc* proc, buf_t buf, uintptr_t base, uintptr_t* pfirst, uintptr
     }
 
     *plast = last;
-    *pentry = ehdr.type == ET_DYN ? base + ehdr.entry : proc->p_info.base + ehdr.entry;
+    *pentry = ehdr.type == ET_DYN ? base + ehdr.entry : info.base + ehdr.entry;
     *pfirst = first;
 
     free(phdr);
@@ -172,9 +173,11 @@ err1:
 
 int perf_output_jit_interface_file(uint8_t*, size_t, uintptr_t);
 
-bool
-elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, size_t interpsz, struct ELFLoadInfo* o_info)
+EXPORT bool
+lfi_proc_loadelf(struct LFIAddrSpace* as, uint8_t* progdat, size_t progsz, uint8_t* interpdat, size_t interpsz, struct LFILoadInfo* o_info, struct LFILoadOpts opts)
 {
+    struct LFIAddrSpaceInfo info = lfi_as_info(as);
+
     buf_t prog = (buf_t) {
         .data = progdat,
         .size = progsz,
@@ -185,22 +188,22 @@ elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat
         .size = interpsz,
     };
 
-    size_t stacksize = p->proc->tux->opts.stacksize;
-    lfiptr_t stack = lfi_as_mapat(p->proc->p_as, p->proc->p_info.maxaddr - stacksize, stacksize, LFI_PROT_READ | LFI_PROT_WRITE, MAPANON, NULL, 0);
+    size_t stacksize = opts.stacksize;
+
+    lfiptr_t stack = lfi_as_mapat(as, info.maxaddr - stacksize, stacksize, LFI_PROT_READ | LFI_PROT_WRITE, MAPANON, NULL, 0);
     if (stack == (lfiptr_t) -1)
         goto err;
-    p->stack = stack;
 
-    lfiptr_t base = p->proc->p_info.minaddr;
+    lfiptr_t base = info.minaddr;
     lfiptr_t pfirst, plast, pentry, ifirst, ilast, ientry;
     bool hasinterp = interp.data != NULL;
-    if (!load(p->proc, prog, base, &pfirst, &plast, &pentry))
+    if (!load(as, prog, base, &pfirst, &plast, &pentry, opts.pagesize))
         goto err;
     if (hasinterp)
-        if (!load(p->proc, interp, plast, &ifirst, &ilast, &ientry))
+        if (!load(as, interp, plast, &ifirst, &ilast, &ientry, opts.pagesize))
             goto err;
 
-    if (p->proc->tux->opts.perf) {
+    if (opts.perf) {
         if (perf_output_jit_interface_file(progdat, progsz, pfirst))
             goto err;
     }
@@ -209,8 +212,8 @@ elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat
     ssize_t n = bufread(prog, &ehdr, sizeof(ehdr), 0);
     assert(n == sizeof(ehdr));
 
-    *o_info = (struct ELFLoadInfo) {
-        .stack = p->stack,
+    *o_info = (struct LFILoadInfo) {
+        .stack = stack,
         .stacksize = stacksize,
         .lastva = hasinterp ? ilast : plast,
         .elfentry = pentry,
@@ -226,4 +229,16 @@ elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat
 err:
     // TODO: procclear
     return false;
+}
+
+#define STACKSIZE (2 * 1024 * 1024)
+
+bool
+elfload(struct TuxThread* p, uint8_t* progdat, size_t progsz, uint8_t* interpdat, size_t interpsz, struct LFILoadInfo* o_info)
+{
+    return lfi_proc_loadelf(p->proc->p_as, progdat, progsz, interpdat, interpsz, o_info, (struct LFILoadOpts) {
+        .stacksize = STACKSIZE,
+        .pagesize = p->proc->tux->opts.pagesize,
+        .perf = p->proc->tux->opts.perf,
+    });
 }

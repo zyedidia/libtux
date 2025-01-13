@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 #include "lfi.h"
-#include "platform.h"
+#include "pal/platform.h"
 
 #define asm __asm__
 
-struct LFIPlatform*
+EXPORT struct LFIPlatform*
 lfi_new_plat(size_t pagesize)
 {
     struct PlatOptions opts = (struct PlatOptions) {
@@ -41,7 +41,7 @@ err1:
     return NULL;
 }
 
-void
+EXPORT void
 lfi_sys_handler(struct LFIPlatform* plat, SysHandlerFn fn)
 {
     plat->syshandler = fn;
@@ -50,9 +50,9 @@ lfi_sys_handler(struct LFIPlatform* plat, SysHandlerFn fn)
 void lfi_syscall_handler(struct LFIContext* ctx)
     asm ("lfi_syscall_handler");
 
-void
+EXPORT void
 lfi_syscall_handler(struct LFIContext* ctx)
 {
-    assert(ctx->plat->syshandler && "platform does not have a system call handler");
-    ctx->plat->syshandler(ctx);
+    assert(ctx->as->plat->syshandler && "platform does not have a system call handler");
+    ctx->as->plat->syshandler(ctx);
 }

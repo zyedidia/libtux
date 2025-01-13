@@ -51,7 +51,7 @@ procnewthread(struct TuxThread* p)
     if (!newp)
         goto err;
 
-    struct LFIContext* ctx = lfi_ctx_new(p->proc->tux->plat, p->proc->p_as, newp, false);
+    struct LFIContext* ctx = lfi_ctx_new(p->proc->p_as, newp, false);
     if (!ctx)
         goto err1;
     newp->p_ctx = ctx;
@@ -79,7 +79,7 @@ procnewfile(struct Tux* tux, uint8_t* prog, size_t size, int argc, char** argv)
     struct LFIAddrSpace* as = lfi_as_new(tux->plat);
     if (!as)
         goto err1;
-    struct LFIContext* ctx = lfi_ctx_new(tux->plat, as, p, true);
+    struct LFIContext* ctx = lfi_ctx_new(as, p, true);
     if (!ctx)
         goto err2;
     p->proc->p_as = as;
@@ -136,7 +136,7 @@ enum {
 };
 
 static bool
-stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, lfiptr_t* newsp)
+stacksetup(struct TuxProc* p, int argc, char** argv, struct LFILoadInfo* info, lfiptr_t* newsp)
 {
     char* argv_ptrs[ARGC_MAX];
     char* stack_top = (char*) info->stack + info->stacksize;
@@ -200,7 +200,7 @@ stacksetup(struct TuxProc* p, int argc, char** argv, struct ELFLoadInfo* info, l
 static bool
 procsetup(struct TuxThread* p, uint8_t* prog, size_t progsz, uint8_t* interp, size_t interpsz, int argc, char** argv)
 {
-    struct ELFLoadInfo info = {0};
+    struct LFILoadInfo info = {0};
     bool b = elfload(p, prog, progsz, interp, interpsz, &info);
     if (!b)
         return false;
@@ -287,4 +287,12 @@ EXPORT struct TuxThread*
 lfi_tux_proc_new(struct Tux* tux, uint8_t* prog, size_t progsz, int argc, char** argv)
 {
     return procnewfile(tux, prog, progsz, argc, argv);
+}
+
+EXPORT bool
+lfi_proc_init(struct LFIContext* ctx, struct LFIAddrSpace* as, struct LFILoadInfo info)
+{
+    (void) as;
+    regs_init(lfi_ctx_regs(ctx), info.ldentry ? info.ldentry : info.elfentry, info.stack + info.stacksize - 16);
+    return true;
 }

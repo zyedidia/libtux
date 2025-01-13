@@ -1,7 +1,7 @@
 #include "lfi_arch.h"
 #include "pal/platform.h"
 
-void
+EXPORT void
 lfi_regs_init(struct TuxRegs* regs, struct LFIAddrSpace* as, struct LFIContext* ctx)
 {
     regs->r14 = as->base;

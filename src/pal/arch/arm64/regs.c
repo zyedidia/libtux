@@ -2,7 +2,7 @@
 #include "pal/platform.h"
 #include "pal/arch/arm64/regs.h"
 
-void
+EXPORT void
 lfi_regs_init(struct TuxRegs* regs, struct LFIAddrSpace* as, struct LFIContext* ctx)
 {
     regs->REG_BASE = as->base;

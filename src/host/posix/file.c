@@ -40,6 +40,12 @@ err:
     return NULL;
 }
 
+struct HostFile*
+host_open(const char* path, int flags, int mode)
+{
+    return host_openat(NULL, path, flags, mode);
+}
+
 ssize_t
 host_read(struct HostFile* file, uint8_t* buf, size_t size)
 {
