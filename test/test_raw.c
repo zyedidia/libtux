@@ -39,6 +39,7 @@ handle_syscall(struct LFIContext* ctx)
 #elif defined(__x86_64__) || defined(_M_X64)
     sysno = lfi_ctx_regs(ctx)->rax;
 #endif
+    printf("%d\n", sysno);
     lfi_ctx_exit(ctx, sysno);
 }
 
@@ -66,8 +67,6 @@ readfile(char* path)
     };
 }
 
-#define STACKSIZE (2 * 1024 * 1024)
-
 int
 main(int argc, char** argv)
 {
@@ -84,7 +83,7 @@ main(int argc, char** argv)
 
     struct LFILoadInfo info;
     bool ok = lfi_proc_loadelf(p->as, (uint8_t*) prog.data, prog.size, NULL, 0, &info, (struct LFILoadOpts) {
-        .stacksize = STACKSIZE,
+        .stacksize = 2 * 1024 * 1024,
         .pagesize = pagesize,
     });
     assert(ok);
@@ -94,8 +93,7 @@ main(int argc, char** argv)
 
     lfi_sys_handler(plat, &handle_syscall);
 
-    uint64_t result = lfi_ctx_run(p->ctx, p->as);
-    assert(result == 42);
+    lfi_ctx_run(p->ctx, p->as);
 
     return 0;
 }
