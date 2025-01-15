@@ -14,7 +14,7 @@ typedef struct {
     size_t size;
 } buf_t;
 
-buf_t bufreadfile(const char* filename);
+buf_t bufreadfile(struct Tux* tux, const char* filename);
 
 enum {
     INPUTMAX = 256,
@@ -110,7 +110,7 @@ main(int argc, char** argv)
 
     struct Tux* tux = lfi_tux_new(plat, args.opts);
 
-    buf_t f = bufreadfile(args.inputs[0]);
+    buf_t f = bufreadfile(tux, args.inputs[0]);
     if (!f.data) {
         fprintf(stderr, "error opening: %s: %s\n", args.inputs[0], strerror(errno));
         return 1;
@@ -122,7 +122,7 @@ main(int argc, char** argv)
         return 1;
     }
 
-    uint64_t code = lfi_tux_proc_run(tux, p);
+    uint64_t code = lfi_tux_proc_run(p);
 
     if (args.opts.verbose)
         fprintf(stderr, "[lfi-run] exited with code: %ld\n", (long) code);

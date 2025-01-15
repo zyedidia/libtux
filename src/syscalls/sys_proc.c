@@ -18,17 +18,23 @@ clearctid(struct TuxThread* p)
 }
 
 uintptr_t
-sys_exit(struct TuxThread* p, int code)
+sys_exit(struct TuxThread* p, uint64_t code)
 {
     clearctid(p);
-    lfi_ctx_exit(p->p_ctx, code);
+    if (p->proc->tux->opts.pause_on_exit)
+        lfi_ctx_pause(p->p_ctx, code);
+    else
+        lfi_ctx_exit(p->p_ctx, code);
     assert(!"unreachable");
 }
 
 uintptr_t
-sys_exit_group(struct TuxThread* p, int code)
+sys_exit_group(struct TuxThread* p, uint64_t code)
 {
     // TODO: exit all threads
-    lfi_ctx_exit(p->p_ctx, code);
+    if (p->proc->tux->opts.pause_on_exit)
+        lfi_ctx_pause(p->p_ctx, code);
+    else
+        lfi_ctx_exit(p->p_ctx, code);
     assert(!"unreachable");
 }

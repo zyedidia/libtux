@@ -28,7 +28,12 @@ filenew(struct Tux* tux, struct HostFile* dir, const char* path, int flags, int 
     if ((flags & TUX_O_CLOEXEC) != 0)
         flags &= ~TUX_O_CLOEXEC;
 
-    struct HostFile* f = host_openat(dir, path, flags, mode);
+    // TODO: concat 'dir' and 'path' instead of requiring dir == NULL
+    struct HostFile* f = NULL;
+    if (tux->opts.fs.open && dir == NULL)
+        f = tux->opts.fs.open(path, flags, mode);
+    if (!f)
+        f = host_openat(dir, path, flags, mode);
     if (!f)
         return NULL;
     return filefnew(f, fullflags);
@@ -41,64 +46,62 @@ filef(void* dev)
 }
 
 static ssize_t
-fileread(void* dev, struct TuxProc* p, uint8_t* buf, size_t buflen)
+fileread(void* dev, uint8_t* buf, size_t buflen)
 {
-    (void) p;
     return host_read(filef(dev), buf, buflen);
 }
 
 static ssize_t
-filewrite(void* dev, struct TuxProc* p, uint8_t* buf, size_t buflen)
+filewrite(void* dev, uint8_t* buf, size_t buflen)
 {
-    (void) p;
     return host_write(filef(dev), buf, buflen);
 }
 
 static ssize_t
-filelseek(void* dev, struct TuxProc* p, off_t off, int whence)
+filelseek(void* dev, off_t off, int whence)
 {
     return host_seek(filef(dev), off, whence);
 }
 
 static int
-filetruncate(void* dev, struct TuxProc* p, off_t length)
+filetruncate(void* dev, off_t length)
 {
     return host_ftruncate(filef(dev), length);
 }
 
 static int
-filechown(void* dev, struct TuxProc* p, tux_uid_t owner, tux_gid_t group)
+filechown(void* dev, tux_uid_t owner, tux_gid_t group)
 {
     return host_fchown(filef(dev), owner, group);
 }
 
 static int
-filechmod(void* dev, struct TuxProc* p, tux_mode_t mode)
+filechmod(void* dev, tux_mode_t mode)
 {
     return host_fchmod(filef(dev), mode);
 }
 
 static int
-fileclose(void* dev, struct TuxProc* p)
+fileclose(void* dev)
 {
     int x = host_close(filef(dev));
     return x;
 }
 
 static int
-filestat(void* dev, struct TuxProc* p, struct Stat* stat)
+filestat(void* dev, struct Stat* stat)
 {
     return host_fstat(filef(dev), stat);
 }
 
 static int
-filesync(void* dev, struct TuxProc* p)
+filesync(void* dev)
 {
     return host_fsync(filef(dev));
 }
 
 static ssize_t
-filegetdents(void* dev, struct TuxProc* p, void* dirp, size_t count)
+filegetdents(void* dev, void* dirp, size_t count)
 {
     return host_getdents64(filef(dev), (struct Dirent*) dirp, count);
 }

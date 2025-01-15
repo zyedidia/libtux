@@ -15,6 +15,14 @@ struct Stat;
 
 struct HostFile* host_openat(struct HostFile* dir, const char* filename, int flags, int mode);
 
+static inline struct HostFile*
+host_open(const char* filename, int flags, int mode)
+{
+    return host_openat(NULL, filename, flags, mode);
+}
+
+struct HostFile* host_fdopen(int fd);
+
 ssize_t host_read(struct HostFile* file, uint8_t* buffer, size_t size);
 
 ssize_t host_write(struct HostFile* file, uint8_t* buffer, size_t size);

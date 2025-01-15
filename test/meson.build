@@ -2,19 +2,7 @@ tests = [
   'test_init.c',
   'test_raw.c',
   'test_tux.c',
-]
-
-raw = [
-  {'file': 'raw/test.S', 'inputs': []}
-]
-
-tux = [
-  {'file': 'tux/hello.c', 'inputs': []},
-  {'file': 'tux/alloc.c', 'inputs': []},
-  {'file': 'tux/argv.c', 'inputs': ['one', 'two', 'three']},
-  {'file': 'tux/file.c', 'inputs': ['tux/inputs/file.txt']},
-  {'file': 'tux/chdir.c', 'inputs': ['tux/inputs', 'file.txt']},
-  {'file': 'tux/thread.c', 'inputs': []},
+  'test_fs.c',
 ]
 
 test('test_init', executable(
@@ -47,31 +35,33 @@ test_tux = executable(
   dependencies: [liblfi_dep]
 )
 
-foreach input : raw
-  out = input['file'].replace('/', '_') + '.lfi'
-  exec = custom_target(out,
-    output: out,
-    input: input['file'],
-    command: [lficc, '-O2', '-o', '@OUTPUT@', '@INPUT@', '-static-pie', '-nostdlib'],
-  )
-  expected = input['file'] + '.out'
-  test(input['file'],
-    go, args: ['run', 'run.go', expected, test_raw, exec] + input['inputs'],
-    workdir: meson.current_source_dir(),
-    suite: ['liblfi']
-  )
-endforeach
+test_fs = executable(
+  'test_fs.elf',
+  'test_fs.c',
+  dependencies: [liblfi_dep]
+)
 
-foreach input : tux
+testdata = [
+  {'bin': test_raw, 'file': 'raw/test.S', 'inputs': [], 'cflags': ['-nostdlib']},
+  {'bin': test_tux, 'file': 'tux/hello.c', 'inputs': [], 'cflags': []},
+  {'bin': test_tux, 'file': 'tux/alloc.c', 'inputs': [], 'cflags': []},
+  {'bin': test_tux, 'file': 'tux/argv.c', 'inputs': ['one', 'two', 'three'], 'cflags': []},
+  {'bin': test_tux, 'file': 'tux/file.c', 'inputs': ['tux/inputs/file.txt'], 'cflags': []},
+  {'bin': test_tux, 'file': 'tux/chdir.c', 'inputs': ['tux/inputs', 'file.txt'], 'cflags': []},
+  {'bin': test_tux, 'file': 'tux/thread.c', 'inputs': [], 'cflags': []},
+  {'bin': test_fs, 'file': 'tux/fs.c', 'inputs': '/proc/self/test.txt', 'cflags': []}
+]
+
+foreach input : testdata
   out = input['file'].replace('/', '_') + '.lfi'
   exec = custom_target(out,
     output: out,
     input: input['file'],
-    command: [lficc, '-O2', '-o', '@OUTPUT@', '@INPUT@', '-static-pie'],
+    command: [lficc, '-O2', '-o', '@OUTPUT@', '@INPUT@', '-static-pie'] + input['cflags'],
   )
   expected = input['file'] + '.out'
   test(input['file'],
-    go, args: ['run', 'run.go', expected, test_tux, exec] + input['inputs'],
+    go, args: ['run', 'run.go', expected, input['bin'], exec] + input['inputs'],
     workdir: meson.current_source_dir(),
     suite: ['liblfi']
   )

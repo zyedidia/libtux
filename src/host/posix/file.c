@@ -41,9 +41,13 @@ err:
 }
 
 struct HostFile*
-host_open(const char* path, int flags, int mode)
+host_fdopen(int fd)
 {
-    return host_openat(NULL, path, flags, mode);
+    struct HostFile* hf = malloc(sizeof(struct HostFile));
+    *hf = (struct HostFile) {
+        .fd = fd,
+    };
+    return hf;
 }
 
 ssize_t

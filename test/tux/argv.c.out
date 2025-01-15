@@ -1,5 +1,4 @@
 argc: 4
-argv[0]: ../build/test/tux_argv.c.lfi
 argv[1]: one
 argv[2]: two
 argv[3]: three

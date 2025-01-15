@@ -1,7 +1,10 @@
+#define _GNU_SOURCE
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/mman.h>
 
 #include "lfi.h"
@@ -31,6 +34,29 @@ readfile(char* path)
     };
 }
 
+static char filedata[] = "in memory: the quick brown fox jumps over the lazy dog\n";
+
+static struct HostFile*
+fsopen(const char* filename, int flags, int mode)
+{
+    (void) flags, (void) mode;
+    if (strcmp(filename, "/proc/self/test.txt") == 0) {
+        int fd = memfd_create("", 0);
+        if (fd < 0)
+            return NULL;
+        if (ftruncate(fd, sizeof(filedata) - 1) < 0)
+            goto err;
+        if (write(fd, filedata, sizeof(filedata) - 1) < 0)
+            goto err;
+        lseek(fd, 0, SEEK_SET);
+        return lfi_host_fdopen(fd);
+err:
+        close(fd);
+        return NULL;
+    }
+    return NULL;
+}
+
 int
 main(int argc, char** argv)
 {
@@ -44,6 +70,9 @@ main(int argc, char** argv)
     struct Tux* tux = lfi_tux_new(plat, (struct TuxOptions) {
         .pagesize = pagesize,
         .stacksize = 2 * 1024 * 1024,
+        .fs = (struct TuxFS) {
+            .open = fsopen,
+        },
     });
     assert(tux);
 

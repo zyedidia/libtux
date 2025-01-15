@@ -7,6 +7,8 @@ srcs = files(
   'file.c',
   'fd.c',
   'perf.c',
+  'err.c',
+  'host.c',
 )
 
 subdir('pal')
@@ -20,9 +22,12 @@ boxmap = subproject('libboxmap')
 
 defs = []
 
-libelf = dependency('libelf', required: false)
-if libelf.found()
-  defs += '-DHAVE_LIBELF'
+libelf = []
+if get_option('perf')
+  libelf = dependency('libelf', required: false)
+  if libelf.found()
+    defs += '-DHAVE_LIBELF'
+  endif
 endif
 
 config_h = configure_file(

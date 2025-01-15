@@ -9,8 +9,6 @@
 struct PlatOptions {
     size_t pagesize;
     size_t vmsize;
-    bool perf;
-    bool verbose;
     bool sysexternal;
 };
 

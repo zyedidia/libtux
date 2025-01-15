@@ -91,6 +91,9 @@ arch_syshandle(struct LFIContext* ctx)
         const char* name = arch_sysname(orig_rax);
         if (!name)
             name = sysname(orig_rax);
-        fprintf(stderr, "strace: %s = %lx\n", name, regs->rax);
+        if (name)
+            fprintf(stderr, "strace: %s = %lx\n", name, regs->rax);
+        else
+            fprintf(stderr, "strace: %ld = %lx\n", orig_rax, regs->rax);
     }
 }

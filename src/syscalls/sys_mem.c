@@ -70,7 +70,7 @@ sys_mmap(struct TuxProc* p, lfiptr_t addrup, size_t length, int prot, int flags,
         r = procmapany(p, length, prot, flags, fd, off, &addrp);
     }
     if (r < 0) {
-        VERBOSE(p->tux, "sys_mmap(%lx (%lx), %ld, %d, %d, %d, %ld) = %d", addrp, i_addrp, length, prot, flags, fd, (long) off, r);
+        VERBOSE(p->tux, "sys_mmap((%lx), %ld, %d, %d, %d, %ld) = %d", i_addrp, length, prot, flags, fd, (long) off, r);
         return r;
     }
     lfiptr_t ret = addrp;

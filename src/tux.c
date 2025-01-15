@@ -52,7 +52,7 @@ err1:
 }
 
 EXPORT uint64_t
-lfi_tux_proc_run(struct Tux* tux, struct TuxThread* p)
+lfi_tux_proc_run(struct TuxThread* p)
 {
     return lfi_ctx_run(p->p_ctx, p->proc->p_as);
 }

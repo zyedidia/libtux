@@ -36,7 +36,7 @@ sys_write(struct TuxProc* p, int fd, lfiptr_t bufp, size_t size)
     uint8_t* buf = procbuf(p, bufp, size);
     if (!buf)
         return -TUX_EFAULT;
-    return f->write(f->dev, p, buf, size);
+    return f->write(f->dev, buf, size);
 }
 
 ssize_t
@@ -52,7 +52,7 @@ sys_read(struct TuxProc* p, int fd, lfiptr_t bufp, size_t size)
     uint8_t* buf = procbuf(p, bufp, size);
     if (!buf)
         return -TUX_EFAULT;
-    return f->read(f->dev, p, buf, size);
+    return f->read(f->dev, buf, size);
 }
 
 struct IOVec {
@@ -174,10 +174,10 @@ sys_pread64(struct TuxProc* p, int fd, lfiptr_t bufp, size_t size, ssize_t offse
     uint8_t* buf = procbuf(p, bufp, size);
     if (!buf)
         return -TUX_EFAULT;
-    ssize_t orig = f->lseek(f->dev, p, 0, TUX_SEEK_CUR);
-    f->lseek(f->dev, p, offset, TUX_SEEK_SET);
-    ssize_t n = f->read(f->dev, p, buf, size);
-    f->lseek(f->dev, p, orig, TUX_SEEK_SET);
+    ssize_t orig = f->lseek(f->dev, 0, TUX_SEEK_CUR);
+    f->lseek(f->dev, offset, TUX_SEEK_SET);
+    ssize_t n = f->read(f->dev, buf, size);
+    f->lseek(f->dev, orig, TUX_SEEK_SET);
     return n;
 }
 
@@ -202,7 +202,7 @@ sys_newfstatat(struct TuxProc* p, int dirfd, lfiptr_t pathp, lfiptr_t statbufp, 
         return -TUX_EBADF;
     if (!f->stat_)
         return -TUX_EACCES;
-    return f->stat_(f->dev, p, stat);
+    return f->stat_(f->dev, stat);
 }
 
 int
@@ -236,7 +236,7 @@ sys_getdents64(struct TuxProc* p, int fd, lfiptr_t dirp, size_t count)
     uint8_t* buf = procbufalign(p, dirp, count, alignof(struct Dirent));
     if (!buf)
         return -TUX_EFAULT;
-    return f->getdents(f->dev, p, buf, count);
+    return f->getdents(f->dev, buf, count);
 }
 
 off_t
@@ -247,7 +247,7 @@ sys_lseek(struct TuxProc* p, int fd, off_t offset, int whence)
         return -TUX_EBADF;
     if (!f->lseek)
         return -TUX_EPERM;
-    return f->lseek(f->dev, p, offset, whence);
+    return f->lseek(f->dev, offset, whence);
 }
 
 int
@@ -276,7 +276,7 @@ sys_ftruncate(struct TuxProc* p, int fd, off_t length)
         return -TUX_EBADF;
     if (!f->truncate)
         return -TUX_EPERM;
-    return f->truncate(f->dev, p, length);
+    return f->truncate(f->dev, length);
 }
 
 int
@@ -296,7 +296,7 @@ sys_fchown(struct TuxProc* p, int fd, tux_uid_t owner, tux_gid_t group)
         return -TUX_EBADF;
     if (!f->chown)
         return -TUX_EPERM;
-    return f->chown(f->dev, p, owner, group);
+    return f->chown(f->dev, owner, group);
 }
 
 int
@@ -316,7 +316,7 @@ sys_fchmod(struct TuxProc* p, int fd, tux_mode_t mode)
         return -TUX_EBADF;
     if (!f->chmod)
         return -TUX_EPERM;
-    return f->chmod(f->dev, p, mode);
+    return f->chmod(f->dev, mode);
 }
 
 int
@@ -327,7 +327,7 @@ sys_fsync(struct TuxProc* p, int fd)
         return -TUX_EBADF;
     if (!f->sync)
         return -TUX_EPERM;
-    return f->sync(f->dev, p);
+    return f->sync(f->dev);
 }
 
 int

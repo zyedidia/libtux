@@ -61,7 +61,7 @@ static void*
 threadspawn(void* arg)
 {
     struct TuxThread* p = (struct TuxThread*) arg;
-    lfi_tux_proc_run(p->proc->tux, p);
+    lfi_tux_proc_run(p);
     VERBOSE(p->proc->tux, "thread %d exited", p->tid);
     return NULL;
 }

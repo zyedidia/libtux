@@ -25,16 +25,16 @@ struct FDFile {
     size_t refs;
     pthread_mutex_t lk_refs;
 
-    ssize_t (*read)(void*, struct TuxProc*, uint8_t*, size_t);
-    ssize_t (*write)(void*, struct TuxProc*, uint8_t*, size_t);
-    ssize_t (*lseek)(void*, struct TuxProc*, off_t, int);
-    int     (*close)(void*, struct TuxProc*);
-    int     (*stat_)(void*, struct TuxProc*, struct Stat*);
-    ssize_t (*getdents)(void*, struct TuxProc*, void*, size_t);
-    int     (*chown)(void*, struct TuxProc*, tux_uid_t, tux_gid_t);
-    int     (*chmod)(void*, struct TuxProc*, tux_mode_t);
-    int     (*truncate)(void*, struct TuxProc*, off_t);
-    int     (*sync)(void*, struct TuxProc*);
+    ssize_t (*read)(void*, uint8_t*, size_t);
+    ssize_t (*write)(void*, uint8_t*, size_t);
+    ssize_t (*lseek)(void*, off_t, int);
+    int     (*close)(void*);
+    int     (*stat_)(void*, struct Stat*);
+    ssize_t (*getdents)(void*, void*, size_t);
+    int     (*chown)(void*, tux_uid_t, tux_gid_t);
+    int     (*chmod)(void*, tux_mode_t);
+    int     (*truncate)(void*, off_t);
+    int     (*sync)(void*);
 
     struct HostFile* (*file)(void*);
 };

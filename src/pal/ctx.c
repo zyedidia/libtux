@@ -122,7 +122,19 @@ lfi_ctx_exit(struct LFIContext* ctx, uint64_t val)
 }
 
 EXPORT void
+lfi_ctx_pause(struct LFIContext* ctx, uint64_t val)
+{
+    lfi_asm_ctx_exit(ctx->kstackp, val);
+}
+
+EXPORT void
 lfi_ctx_tpset(struct LFIContext* ctx, lfiptr_t tp)
 {
     ctx->tp = tp;
+}
+
+EXPORT struct LFIAddrSpace*
+lfi_ctx_as(struct LFIContext* ctx)
+{
+    return ctx->as;
 }

@@ -108,7 +108,7 @@ procfile(struct TuxThread* p, uint8_t* prog, size_t progsz, int argc, char** arg
     buf_t interp = (buf_t){NULL, 0};
     if (interppath) {
         if (cwk_path_is_absolute(interppath)) {
-            interp = bufreadfile(interppath);
+            interp = bufreadfile(p->proc->tux, interppath);
             if (!interp.data) {
                 WARN("error opening dynamic linker %s: %s", interppath, strerror(errno));
                 free(interppath);
@@ -237,9 +237,11 @@ procmapany(struct TuxProc* p, size_t size, int prot, int flags, int fd,
         struct FDFile* f = fdget(&p->fdtable, fd);
         if (!f)
             return -TUX_EBADF;
-        if (!f->file)
+        if (f->file) {
+            hf = f->file(f->dev);
+        } else {
             return -TUX_EACCES;
-        hf = f->file(f->dev);
+        }
     }
     LOCK_WITH_DEFER(&p->lk_as, lk_as);
     lfiptr_t addr = lfi_as_mapany(p->p_as, size, prot, flags, hf, offset);
@@ -258,9 +260,11 @@ procmapat(struct TuxProc* p, lfiptr_t start, size_t size, int prot, int flags,
         struct FDFile* f = fdget(&p->fdtable, fd);
         if (!f)
             return -TUX_EBADF;
-        if (!f->file)
+        if (f->file) {
+            hf = f->file(f->dev);
+        } else {
             return -TUX_EACCES;
-        hf = f->file(f->dev);
+        }
     }
     LOCK_WITH_DEFER(&p->lk_as, lk_as);
     lfiptr_t addr = lfi_as_mapat(p->p_as, start, size, prot, flags, hf, offset);
@@ -295,4 +299,10 @@ lfi_proc_init(struct LFIContext* ctx, struct LFIAddrSpace* as, struct LFILoadInf
     (void) as;
     regs_init(lfi_ctx_regs(ctx), info.ldentry ? info.ldentry : info.elfentry, info.stack + info.stacksize - 16);
     return true;
+}
+
+EXPORT struct LFIContext*
+lfi_tux_ctx(struct TuxThread* p)
+{
+    return p->p_ctx;
 }
