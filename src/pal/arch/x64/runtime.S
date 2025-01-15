@@ -69,6 +69,24 @@ lfi_asm_ctx_exit:
     popq %r15
     ret
 
+// Accelerated return for library sandboxes.
+.p2align 4
+.global lfi_ret
+lfi_ret:
+	movq lfi_myctx@gottpoff(%rip), %r11
+	movq %fs:(%r11), %r11
+	movq 0(%r11), %rsp // kstackp
+	// return value should already be in %rax
+	// realign stack (is this necessary?)
+	popq %rbp
+	popq %rbx
+	popq %r12
+	popq %r13
+	popq %r14
+	popq %r15
+	ret
+	int3
+
 // Loads the sandbox's thread pointer into %rax. Does not clobber flags.
 .p2align 4
 .global lfi_get_tp
