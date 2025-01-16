@@ -113,3 +113,7 @@ enum {
 enum {
     TUX_SIGCHLD = 0x11,
 };
+
+enum {
+    TUX_PR_SET_NAME = 15,
+};
