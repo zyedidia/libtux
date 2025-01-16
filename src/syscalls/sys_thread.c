@@ -28,6 +28,12 @@ futexwake(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val)
     return host_futexwake(p, uaddr, op, val);
 }
 
+static long
+futexrequeue(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val)
+{
+    return host_futexrequeue(p, uaddr, op, val);
+}
+
 long
 sys_futex(struct TuxThread* p, lfiptr_t uaddrp, int op, uint32_t val,
         uint64_t timeoutp, lfiptr_t uaddr2p, uint32_t val3)
@@ -44,7 +50,10 @@ sys_futex(struct TuxThread* p, lfiptr_t uaddrp, int op, uint32_t val,
         return futexwait(p, uaddr, op, val, timeoutp);
     case TUX_FUTEX_WAKE:
         return futexwake(p, uaddr, op, val);
+    case TUX_FUTEX_REQUEUE:
+        return futexrequeue(p, uaddr, op, val);
     default:
+        WARN("invalid futex op %d\n", op);
         return -TUX_EINVAL;
     }
 }

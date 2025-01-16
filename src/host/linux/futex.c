@@ -24,3 +24,9 @@ host_futexwake(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val)
 {
     return syscall(SYS_futex, uaddr, op, val);
 }
+
+long
+host_futexrequeue(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val)
+{
+    return syscall(SYS_futex, uaddr, op, val);
+}

@@ -96,6 +96,8 @@ long host_futexwait(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val, 
 
 long host_futexwake(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val);
 
+long host_futexrequeue(struct TuxThread* p, uint32_t* uaddr, int op, uint32_t val);
+
 unsigned host_cpucount(void);
 
 int host_prctl_set_name(char* name);

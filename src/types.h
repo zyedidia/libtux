@@ -88,6 +88,7 @@ enum {
 enum {
     TUX_FUTEX_WAIT           = 0,
     TUX_FUTEX_WAKE           = 1,
+    TUX_FUTEX_REQUEUE        = 3,
     TUX_FUTEX_WAIT_BITSET    = 9,
     TUX_FUTEX_PRIVATE_FLAG   = 128,
     TUX_FUTEX_CLOCK_REALTIME = 256,
