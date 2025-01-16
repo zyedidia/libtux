@@ -59,6 +59,7 @@ enum {
     TUX_SYS_rt_sigsuspend      = 130,
     TUX_SYS_sigaltstack        = 131,
     TUX_SYS_statfs             = 137,
+    TUX_SYS_prctl              = 157,
     TUX_SYS_arch_prctl         = 158,
     TUX_SYS_setrlimit          = 160,
     TUX_SYS_gettid             = 186,
